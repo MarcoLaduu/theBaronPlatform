@@ -19,7 +19,7 @@ export function updateProjs(){
     if(q.life<=0)continue;
     if(q.type==='thorn'){if(q.ph>q.warn){const hg=Math.min(28,(q.ph-q.warn)*4);if(overlap(G.P,{x:q.x+1,y:floorY-hg,w:10,h:hg}))hurt(q.x+6);}}
     else{
-      if(G.atkBox&&q.type!=='wave'&&overlap(G.atkBox,q)){q.life=0;stat('proj');puff(q.x+4,q.y+4,'#ffffff',6,1.4);sfx('kill');continue;}
+      if(G.atkBox&&q.type!=='wave'&&q.type!=='sonic'&&overlap(G.atkBox,q)){q.life=0;stat('proj');puff(q.x+4,q.y+4,'#ffffff',6,1.4);sfx('kill');continue;}
       if(overlap(G.P,q)){hurt(q.x+q.w/2);if(q.type!=='wave'&&q.type!=='barrel')q.life=0;}
     }
   }

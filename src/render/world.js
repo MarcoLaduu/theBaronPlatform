@@ -90,6 +90,9 @@ export function drawWorld(){
     if(b.st==='dying'){bx+=Math.round((Math.random()-.5)*4);if((b.k>>2)%2)img=face?sp.wr:sp.wl;}
     ctx.globalAlpha=b.alpha??1;
     if(b.i===4){const fl=(G.frame>>2)%2;ctx.drawImage(img,bx,by+(fl?2:0),sw,sh-(fl?4:0));}
+    else if(b.i===2&&(b.st==='cling'||b.st==='toWall')){ // aggrappato al muro: ruotato di 90° con le zampe verso la parete
+      const u=b.st==='cling'?1:Math.min(1,b.k/40),ang=(b.wallDir>0?1:-1)*Math.PI/2*u;
+      ctx.save();ctx.translate(Math.round(b.x+b.w/2-cx),Math.round(b.y+b.h/2-cy));ctx.rotate(ang);ctx.drawImage(img,-sw/2,-sh/2);ctx.restore();}
     else if(b.i===2&&b.st==='idle'&&b.k<8){ctx.drawImage(img,bx-2,by+4,sw+4,sh-4);}
     else if(b.i===3&&b.st==='aim'){ctx.drawImage(img,bx+((G.frame>>1)%2?1:-1)*(b.k>30?1:0),by);}
     else ctx.drawImage(img,bx,by);
@@ -104,6 +107,9 @@ export function drawWorld(){
     if(q.type==='barrel')(q.coin?drawBigCoin(x,y):drawBarrel(x,y,q.rot));
     else if(q.type==='orb'){px(x,y+1,8,6,'#1a3a0a');px(x+1,y,6,8,'#1a3a0a');px(x+1,y+1,6,6,'#6ab02a');px(x+2,y+2,3,3,G.frame%8<4?'#e0ff8a':'#b0e050');}
     else if(q.type==='fire'){px(x,y+1,8,6,'#8a1a08');px(x+1,y,6,8,'#8a1a08');px(x+1,y+1,6,6,'#ff6020');px(x+2,y+2,4,4,'#ffd060');}
+    else if(q.type==='sonic'){const d=q.vx>=0?1:-1,cx0=x+(d>0?0:12),cy0=y+9;
+      for(let i=0;i<3;i++){const r=4+i*4,col=((G.frame>>2)+i)%2?'#e0d0ff':'#9a6ad8';
+        for(let a=-1;a<=1;a+=.18)px(cx0+d*Math.cos(a)*r,cy0+Math.sin(a)*r*1.1,1,1,col);}}
     else if(q.type==='shriek'){const r=G.frame%10<5;px(x,y+2,8,4,r?'#d04aa0':'#8a3a9a');px(x+2,y,4,8,r?'#d04aa0':'#8a3a9a');px(x+2,y+2,4,4,'#120818');}
     else if(q.type==='wave'){px(x,y+4,10,4,'#8a7a5a');px(x+2,y+1,6,3,'#b0a07a');px(x+3,y,4,1,'#ffffff');}
     else if(q.type==='thorn'){

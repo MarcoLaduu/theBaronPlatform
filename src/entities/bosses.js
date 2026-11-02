@@ -60,8 +60,26 @@ export function updateBoss(){
       if(b.k>=20){let nx,tries=0;do{nx=x0+10+Math.random()*(x1-x0-20-b.w);}while(Math.abs(nx+b.w/2-px)<70&&tries++<30);b.x=nx;b.st='appear';b.k=0;}
     } else if(b.st==='appear'){b.k++;b.alpha=b.k/20;b.visible=b.k>12;if(b.k>=20)b.st='idle';}
     break;}
-  case 2:{ // Pushatomìdir: grandi salti e onde d'urto
-    if(b.st==='idle'){b.vx*=.8;b.face=toP;b.k++;if(b.k>(low?35:55)&&b.onGround){b.st='air';b.vy=-6.8;b.vx=clamp((px-bx)/55,-2.6,2.6);b.k=0;sfx('jump');}}
+  case 2:{ // Pushatomìdir: grandi salti con onde d'urto; ogni tanto si aggrappa a un muro e spara ultrasuoni
+    if(b.st==='idle'){b.vx*=.8;b.face=toP;b.k++;
+      if(b.k>(low?35:55)&&b.onGround){
+        b.jumps=(b.jumps||0)+1;
+        // ogni 3 salti (ogni 2 quando è a metà vita) salta sul muro più lontano dal giocatore
+        if(b.jumps%(low?2:3)===0){const left=px>(x0+x1)/2;b.st='toWall';b.k=0;b.sx=b.x;b.sy=b.y;
+          b.wx=left?x0:x1-b.w;b.wy=floorY-96;b.wallDir=left?1:-1;sfx('jump');}
+        else{b.st='air';b.vy=-6.8;b.vx=clamp((px-bx)/55,-2.6,2.6);b.k=0;sfx('jump');}}}
+    if(b.st==='toWall'){ // balzo ad arco verso il muro
+      b.k++;const u=Math.min(1,b.k/40);b.x=b.sx+(b.wx-b.sx)*u;b.y=b.sy+(b.wy-b.sy)*u-Math.sin(u*Math.PI)*40;b.face=b.wallDir;
+      if(u>=1){b.st='cling';b.k=0;G.shake=6;sfx('slam');puff(b.wallDir>0?b.x:b.x+b.w,b.y+b.h/2,'#c8c4a0',10,1.6);}
+      break;}
+    if(b.st==='cling'){ // aggrappato al muro: ultrasuoni verso il giocatore
+      b.k++;b.x=b.wx+Math.round(Math.sin(b.k*.6))*(b.k%30>22?1:0);b.y=b.wy;b.face=b.wallDir;
+      const shots=low?4:3;
+      if(b.k%30===0&&b.k<=shots*30){
+        const ox=b.wallDir>0?b.x+b.w:b.x-12,oy=b.y+12,a=Math.atan2(G.P.y+10-oy,px-ox);
+        G.projs.push({type:'sonic',x:ox,y:oy-9,w:12,h:18,vx:Math.cos(a)*2.3,vy:Math.sin(a)*2.3,dir:b.wallDir,life:260});sfx('screech');}
+      if(b.k>shots*30+40){b.st='air';b.vy=-2;b.vx=b.wallDir*1.6;b.k=0;} // si stacca e ricade con un'onda d'urto
+      break;}
     b.vy=Math.min(b.vy+.3,7);moveBody(b);
     if(b.st==='air'&&b.onGround){b.k++;if(b.k>2){b.st='idle';b.k=0;b.vx=0;G.shake=10;sfx('slam');
       G.projs.push({type:'wave',x:b.x-10,y:floorY-8,w:10,h:8,vx:-2.2,life:150},{type:'wave',x:b.x+b.w,y:floorY-8,w:10,h:8,vx:2.2,life:150});}}
