@@ -10,7 +10,7 @@ import { die, hurt, newPlayer, respawn, updatePlayer } from '../entities/player.
 import { updateProjs } from '../entities/projectiles.js';
 import { confirmHit, hit, menuOK, pollPad, tapPos, tickPad } from '../input.js';
 import { INTRO, render } from '../render/screens.js';
-import { CHEATS, CHEAT_LIST, IS_DEV, helpSeen, loadSave, markHelpSeen, markSeen, save, saveCheats, startLives } from '../save.js';
+import { CHEATS, CHEAT_LIST, IS_DEV, helpSeen, isSeen, loadSave, markHelpSeen, markSeen, save, saveCheats, startLives } from '../save.js';
 import { checkOrientation, syncTouchUI } from '../mobile.js';
 import { G, cam } from '../state.js';
 import { AUDIO_BTN, G_COLS, choiceRect, PAUSE_STEP, PAUSE_Y, TITLE_STEP, TITLE_Y, aRect, backHit, cheatRect, galRect, inRect, levelRect } from '../ui/layout.js';
@@ -88,7 +88,7 @@ function step(){
     if(menuOK())items[G.menuSel].act();
     break;}
   case 'levels':{G.titleX+=.4;const max=loadSave();
-    // solo in locale: dopo aver scelto un livello si decide se giocarlo tutto o andare dritti al boss
+    // dopo aver scelto un livello già completato si decide se giocarlo tutto o andare dritti al boss
     if(G.lvlChoice){const ch=G.lvlChoice;
       if(hit.up||hit.down||hit.left||hit.right)ch.sel=1-ch.sel;
       if(hit.pause){G.lvlChoice=null;break;}
@@ -97,7 +97,8 @@ function step(){
       else if(menuOK())act=ch.sel;
       if(act>=0){G.lvlChoice=null;startLevel(ch.i,act===1);}
       break;}
-    const pick=i=>{if(IS_DEV)G.lvlChoice={i,sel:0};else startLevel(i);};
+    // la scelta compare quando il boss di quel livello è già stato sconfitto (in locale sempre)
+    const pick=i=>{if(IS_DEV||isSeen('boss'+i))G.lvlChoice={i,sel:0};else startLevel(i);};
     if(hit.right)G.selL=Math.min(5,G.selL+1);if(hit.left)G.selL=Math.max(0,G.selL-1);
     if(hit.down)G.selL=Math.min(5,G.selL+3);if(hit.up)G.selL=Math.max(0,G.selL-3);
     if(hit.pause){G.state='title';break;}

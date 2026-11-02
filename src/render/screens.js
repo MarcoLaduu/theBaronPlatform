@@ -201,7 +201,7 @@ function renderMenus(){
       out.fillStyle='rgba(10,4,8,.78)';out.fillRect(0,0,W*S,H*S);
       panel(360,190,560,330);
       text('LIVELLO '+(ch.i+1)+' · '+THEMES[ch.i].name,640,236,24,'#e8b84a','center',700);
-      text('Modalità sviluppo (solo in locale)',640,268,17,'#9a8476','center',400);
+      text(isSeen('boss'+ch.i)?'Hai già sconfitto il boss di questo livello':'Modalità sviluppo (solo in locale)',640,268,17,'#9a8476','center',400);
       ['Livello completo','Vai subito al boss'].forEach((l,i)=>{const r=choiceRect(i);menuItem(l,640,r.y+r.h/2,i===ch.sel);});
       text('INVIO per scegliere · ESC per annullare',640,488,17,'#9a8476','center',400);}
     return;
