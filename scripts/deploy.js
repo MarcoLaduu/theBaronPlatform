@@ -1,0 +1,31 @@
+// Deploy su GitHub Pages: build in docs/, commit e push.
+// Uso:  npm run deploy                     -> messaggio automatico con data e ora
+//       npm run deploy -- "nuovo livello"  -> messaggio personalizzato
+import { execSync } from 'node:child_process';
+
+const run = (cmd) => {
+  console.log(`\n> ${cmd}`);
+  execSync(cmd, { stdio: 'inherit' });
+};
+
+const now = new Date().toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' });
+const message = process.argv.slice(2).join(' ').trim() || `Deploy ${now}`;
+
+try {
+  run('npm run build');
+  run('git add -A');
+
+  const changes = execSync('git status --porcelain').toString().trim();
+  if (changes) {
+    run(`git commit -m ${JSON.stringify(message)}`);
+  } else {
+    console.log('\nNessuna modifica da salvare: salto il commit.');
+  }
+
+  run('git push');
+  console.log('\nFatto! Tra circa un minuto il sito sarà aggiornato:');
+  console.log('https://marcoladuu.github.io/theBaronPlatform/');
+} catch {
+  console.error('\nDeploy interrotto: controlla il messaggio di errore qui sopra.');
+  process.exit(1);
+}

@@ -1011,7 +1011,10 @@ function drawHUD(){
   ctx.drawImage(BAR.idle[0],0,0,16,15,W-46,3,16,15);
   if(boss&&fight){const bw=150,x0=(W-bw)/2,y0=H-10;px(x0-2,y0-2,bw+4,7,'#0a0408');px(x0,y0,bw,3,'#3a1a20');px(x0,y0,Math.round(bw*Math.max(0,boss.hp)/boss.max),3,boss.i===5?'#ff5a2a':'#d8344a');px(x0,y0,Math.round(bw*Math.max(0,boss.hp)/boss.max),1,'#ff9aa8');}
 }
+// Il font unisce 'f' + 'i' (e simili) in una legatura che sembra una A: un separatore invisibile la impedisce.
+const noLig=s=>String(s).replace(/([fF])(?=[ilfjtIL])/g,'$1\u200C');
 function text(s,x,y,size,col='#f3e3c3',align='center',weight=600){
+  s=noLig(s);
   out.font=`${weight} ${size}px 'Pixelify Sans','Courier New',monospace`;out.textAlign=align;out.textBaseline='middle';
   const o=Math.max(3,size/12|0);out.fillStyle='#0a0408';out.fillText(s,x+o,y+o);out.fillStyle=col;out.fillText(s,x,y);
 }

@@ -94,6 +94,7 @@ npm install       # installa Vite (solo la prima volta)
 npm run dev       # avvia il gioco in locale con ricarica automatica
 npm run build     # crea la versione da pubblicare nella cartella docs/
 npm run preview   # prova in locale la versione di docs/
+npm run deploy    # build + commit + push in un colpo solo
 ```
 
 ## Pubblicazione su GitHub Pages
@@ -104,7 +105,14 @@ La build viene generata nella cartella `docs/`, che GitHub Pages pubblica dirett
 2. Fai commit e push del progetto, **inclusa la cartella `docs/`**.
 3. La prima volta, nel repository apri **Settings → Pages** e imposta **Deploy from a branch** → branch **main** → cartella **/docs**.
 
-Ogni volta che modifichi il gioco, rilancia `npm run build` e fai push: il sito si aggiorna in circa un minuto.
+Ogni volta che modifichi il gioco basta un solo comando, che fa build, commit e push:
+
+```bash
+npm run deploy                       # messaggio di commit automatico con data e ora
+npm run deploy -- "Nuovo livello"     # messaggio personalizzato
+```
+
+Il sito si aggiorna in circa un minuto.
 
 ## Crediti
 
