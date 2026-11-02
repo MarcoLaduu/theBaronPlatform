@@ -28,7 +28,7 @@ export function render(){renderMain();drawToast();}
 // ---------- finestra dei comandi ----------
 const HELP_ACTIONS=['Muoversi','Saltare','Bastonata','Pausa','Indietro nei menu'];
 const HELP_KEYS=['← →  oppure  A D','Spazio, ↑, W o Z','X, J o K','P o Esc','Esc'];
-const HELP_TOUCH=['◀ ▶','A','B','II','Indietro'];
+const HELP_TOUCH=['Pulsanti ◀ ▶ in basso a sinistra','Pulsante A in basso a destra','Pulsante B, accanto ad A','Pulsante II in alto al centro','Tocca «Indietro» in alto a sinistra'];
 const HELP_PADS={
   xbox:   {name:'Xbox',        keys:['Croce o levetta sinistra','A','X, B o Y','Start','B'],              ok:'A'},
   ps:     {name:'PlayStation', keys:['Croce o levetta sinistra','✕','□, ○ o △','Options','○'],            ok:'✕'},
@@ -49,7 +49,7 @@ function renderHelp(){
   const pt=padType(),pad=pt&&HELP_PADS[pt],touch=!pad&&document.body.classList.contains('is-touch');
   let heads,cols,colsData;
   if(pad){heads=['Azione','Controller'+(pad.name?' '+pad.name:'')];cols=[140,520];colsData=[pad.keys];}
-  else if(touch){heads=['Azione','Touch','Tastiera'];cols=[140,520,820];colsData=[HELP_TOUCH,HELP_KEYS];}
+  else if(touch){heads=['Azione','Comandi touch'];cols=[140,520];colsData=[HELP_TOUCH];}
   else{heads=['Azione','Tastiera'];cols=[140,520];colsData=[HELP_KEYS];}
   heads.forEach((h,i)=>text(h.toUpperCase(),cols[i],140,18,i===1?'#e8b84a':'#9a8476','left',600));
   {const msg=pad?'Controller collegato':'Collega un controller per vedere i suoi comandi',col=pad?'#2fb06a':'#7a6a6a';

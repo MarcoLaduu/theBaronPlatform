@@ -18,3 +18,8 @@ addEventListener('touchend',()=>{if(!isTouch())return;if(!tried||needsRotate()){
 
 // Mentre si gioca, ruotare in verticale mette subito in pausa.
 export function checkOrientation(){if(needsRotate()&&G.state==='play'){G.state='pause';G.pauseSel=0;}}
+
+// I comandi touch e il pulsante di pausa servono solo mentre si gioca:
+// nelle altre schermate (menu, comandi, pausa…) si nascondono per non coprire il testo.
+let wasPlaying=null;
+export function syncTouchUI(){const p=G.state==='play';if(p!==wasPlaying){wasPlaying=p;document.body.classList.toggle('playing',p);}}

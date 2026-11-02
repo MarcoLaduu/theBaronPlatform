@@ -33,9 +33,9 @@ canvas{display:block; width:100%; height:100%; image-rendering:pixelated; image-
   touch-action:none; user-select:none; -webkit-user-select:none
 }
 .touch button.on{background:#e8b84a88}
-body.is-touch .touch{display:flex}
+body.is-touch.playing .touch{display:flex}
 .pausebtn{display:none;width:44px;height:36px;background:#0a040899;border:2px solid #f3e3c366;color:var(--ink);font-family:var(--pix);font-weight:700;font-size:16px;border-radius:8px;touch-action:none}
-body.is-touch .pausebtn{display:block}
+body.is-touch.playing .pausebtn{display:block}
 
 /* ---------- telefono e tablet ---------- */
 /* Niente zoom col doppio tocco, niente selezione o menu del tocco prolungato, niente "rimbalzo" della pagina. */
