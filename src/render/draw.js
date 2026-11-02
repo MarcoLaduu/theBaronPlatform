@@ -4,6 +4,7 @@ import { H, S, W } from '../config.js';
 import { drawBG } from './world.js';
 import { G } from '../state.js';
 import { mk } from '../utils.js';
+import { SCROLL } from '../ui/scroll.js';
 import { getTheme } from '../world/themes.js';
 
 export function triFill(cx,by,hw,h,col){ctx.fillStyle=col;for(let j=0;j<h;j++){const w=Math.round(hw*(j+1)/h);ctx.fillRect(cx-w,by-h+j,w*2+1,1);}}
@@ -17,7 +18,8 @@ export function text(s,x,y,size,col='#f3e3c3',align='center',weight=600){
 export function band(y,h,a=.78){out.fillStyle=`rgba(12,4,10,${a})`;out.fillRect(0,y,W*S,h);out.fillStyle='#e8b84a';out.fillRect(0,y,W*S,4);out.fillRect(0,y+h-4,W*S,4);}
 const SIL=new Map();
 function silhouette(c){if(!SIL.has(c))SIL.set(c,mk(c.width,c.height,x=>{x.drawImage(c,0,0);x.globalCompositeOperation='source-in';x.fillStyle='#3a2434';x.fillRect(0,0,c.width,c.height);}));return SIL.get(c);}
-export function drawFit(img,x,y,w,h,locked){const sc=Math.max(1,Math.floor(Math.min(w/img.width,h/img.height))),dw=img.width*sc,dh=img.height*sc;
+// Ingrandisce l'immagine a multipli interi (pixel netti); se così resterebbe troppo piccola, usa la scala piena.
+export function drawFit(img,x,y,w,h,locked){const fit=Math.min(w/img.width,h/img.height),sc=fit>=2?Math.floor(fit):fit,dw=Math.round(img.width*sc),dh=Math.round(img.height*sc);
   out.drawImage(locked?silhouette(img):img,Math.round(x+(w-dw)/2),Math.round(y+(h-dh)/2),dw,dh);}
 export function wrap(str,x,y,maxW,lh,size,col){out.font=`400 ${size}px 'Pixelify Sans','Courier New',monospace`;const words=str.split(' ');let line='',yy=y;
   for(const w of words){const t=line?line+' '+w:w;if(out.measureText(t).width>maxW&&line){text(line,x,yy,size,col,'left',400);line=w;yy+=lh;}else line=t;}
@@ -43,3 +45,25 @@ export function padIcon(x,y,u,col){
 }
 // Larghezza di un testo con il font del gioco (serve per affiancare un'icona).
 export function textWidth(s,size,weight=600){out.font=`${weight} ${size}px 'Pixelify Sans','Courier New',monospace`;return out.measureText(s).width;}
+
+// Divide un testo in righe che stanno nella larghezza data.
+export function wrapLines(str,maxW,size){out.font=`400 ${size}px 'Pixelify Sans','Courier New',monospace`;const words=str.split(' '),lines=[];let line='';
+  for(const w of words){const t=line?line+' '+w:w;if(out.measureText(t).width>maxW&&line){lines.push(line);line=w;}else line=t;}
+  if(line)lines.push(line);return lines;}
+// Testo a capo dentro un riquadro alto h: se non ci sta, scorre da solo (pausa, discesa, pausa)
+// e si può scorrere a mano con la rotellina o trascinando col dito. A destra compare una barra di scorrimento.
+export function scrollText(key,str,x,y,w,h,lh,size,col){
+  if(SCROLL.key!==key){SCROLL.key=key;SCROLL.off=0;SCROLL.manual=0;SCROLL.t=0;}
+  const lines=wrapLines(str,w,size),total=lines.length*lh,max=Math.max(0,total-h);
+  SCROLL.box={x,y,w,h,max};
+  if(max>0){
+    if(SCROLL.manual>0)SCROLL.manual--;
+    else{SCROLL.t++;const pause=120,sp=.4,travel=max/sp,tt=SCROLL.t%(pause*2+travel);SCROLL.off=tt<pause?0:tt<pause+travel?(tt-pause)*sp:max;}
+  }else SCROLL.off=0;
+  SCROLL.off=Math.min(max,Math.max(0,SCROLL.off));
+  out.save();out.beginPath();out.rect(x-6,y-2,w+12,h+4);out.clip();
+  lines.forEach((l,i)=>text(l,x,y+lh/2+i*lh-SCROLL.off,size,col,'left',400));
+  out.restore();
+  if(max>0){const bh=Math.max(18,h*h/total),by=y+(h-bh)*(SCROLL.off/max);
+    out.fillStyle='#3a1a26';out.fillRect(x+w+10,y,4,h);out.fillStyle='#e8b84a';out.fillRect(x+w+10,by,4,bh);}
+}

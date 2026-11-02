@@ -24,6 +24,13 @@ export function startFight(){
 }
 function damageBoss(){
   G.boss.hp=CHEATS.kill?0:G.boss.hp-1;G.boss.inv=30;sfx('bossHit');G.shake=5;puff(G.boss.x+G.boss.w/2,G.boss.y+G.boss.h/2,'#ffd84a',10,2.2);
+  const b=G.boss;
+  // Ser Rekter, seconda fase: a metà vita l'armatura si spacca e l'elmo si stacca e combatte da solo
+  if(b.i===3&&!b.phase2&&b.hp>0&&b.hp<=b.max/2){
+    b.phase2=true;b.inv=60;b.st='wake';b.k=0;b.vx=0;G.shake=12;sfx('boom');
+    puff(b.x+b.w/2,b.y+6,'#c8ccd8',24,3);puff(b.x+b.w/2,b.y+6,'#9a6ad8',12,2);
+    b.helm={x:b.x+b.w/2-12,y:b.y-4,w:24,h:18,vy:-4.5,t:0,hp:2,inv:50,alive:true,state:'pop'};}
+  if(G.boss.hp<=0&&b.helm&&b.helm.alive){b.helm.alive=false;puff(b.helm.x+12,b.helm.y+9,'#ff4030',20,3);}
   if(G.boss.hp<=0){G.boss.st='dying';G.boss.k=0;G.projs=[];G.ents.forEach(e=>{if(e.summoned&&e.alive){e.alive=false;puff(e.x+5,e.y+6,'#c42c38',8);}});}
 }
 export function updateBoss(){
@@ -84,22 +91,47 @@ export function updateBoss(){
     if(b.st==='air'&&b.onGround){b.k++;if(b.k>2){b.st='idle';b.k=0;b.vx=0;G.shake=10;sfx('slam');
       G.projs.push({type:'wave',x:b.x-10,y:floorY-8,w:10,h:8,vx:-2.2,life:150},{type:'wave',x:b.x+b.w,y:floorY-8,w:10,h:8,vx:2.2,life:150});}}
     break;}
-  case 3:{ // Ser Rekter: mira, carica, si stordisce contro il muro
-    if(b.st==='idle'||b.st==='aim'){b.st='aim';b.vx=0;b.face=toP;b.k++;if(b.k>(low?40:65)){b.st='charge';b.dir=b.face;b.k=0;sfx('charge');}}
-    else if(b.st==='charge')b.vx=b.dir*(low?4:3.3);
-    else if(b.st==='stun'){b.vx=0;b.k++;if(b.k>(low?55:80)){b.st='aim';b.k=0;}}
+  case 3:{ // Ser Rekter: carica con la lancia, la miniera crolla quando sbatte; a metà vita si divide in due
+    const p2=b.phase2;
+    // dopo la rottura dell'armatura il corpo resta fermo circa 2,5 secondi prima di tornare all'attacco
+    if(b.st==='wake'){b.vx=0;b.k++;if(b.k>150){b.st='aim';b.k=0;}}
+    else if(b.st==='idle'||b.st==='aim'){b.st='aim';b.vx=0;b.face=toP;b.k++;if(b.k>(p2?30:low?40:65)){b.st='charge';b.dir=b.face;b.k=0;sfx('charge');}}
+    else if(b.st==='charge')b.vx=b.dir*(p2?4.4:3.3);
+    else if(b.st==='stun'){b.vx=0;b.k++;if(b.k>(p2?50:80)){b.st='aim';b.k=0;}}
     b.vy=Math.min(b.vy+.35,6);moveBody(b);
-    if(b.st==='charge'&&b.hitWall){b.st='stun';b.k=0;G.shake=12;sfx('slam');puff(b.dir>0?b.x+b.w:b.x,b.y+14,'#c8ccd8',12,2);}
-    if(b.st!=='stun'){const lb={x:b.face>0?b.x+b.w:b.x-16,y:b.y+14,w:16,h:4};if(overlap(G.P,lb))hurt(bx);}
+    if(b.st==='charge'&&b.hitWall){b.st='stun';b.k=0;G.shake=12;sfx('slam');puff(b.dir>0?b.x+b.w:b.x,b.y+14,'#c8ccd8',12,2);
+      // crollo: massi e stalattiti cadono dal soffitto, con un'ombra a terra che avvisa poco prima
+      const n=p2?6:4;
+      for(let i=0;i<n;i++){const rx=i===0?clamp(px-6,x0+4,x1-16):x0+6+Math.random()*(x1-x0-24);
+        G.projs.push({type:'rock',x:Math.round(rx),y:floorY-150,w:12,h:12,vx:0,vy:0,warn:45+i*14,life:600});}}
+    if(b.st!=='stun'&&b.st!=='wake'){const lb={x:b.face>0?b.x+b.w:b.x-16,y:b.y+14,w:16,h:4};if(overlap(G.P,lb))hurt(bx);}
+    // l'elmo staccato vola sopra l'arena e spara raggi dagli occhi
+    const h=b.helm;
+    if(h&&h.alive){h.t++;if(h.inv>0)h.inv--;
+      if(h.state==='pop'){h.vy+=.2;h.y+=h.vy;if(h.vy>0)h.state='fly';}
+      else{const tx=clamp(px-12+Math.sin(h.t*.03)*70,x0+4,x1-28),ty=floorY-92+Math.sin(h.t*.07)*10;h.x+=(tx-h.x)*.03;h.y+=(ty-h.y)*.05;
+        if(h.t%95===0){const a=Math.atan2(G.P.y+10-(h.y+9),px-(h.x+12));G.projs.push({type:'beam',x:h.x+9,y:h.y+6,w:6,h:6,vx:Math.cos(a)*3,vy:Math.sin(a)*3,life:200});sfx('cast');}}
+      const hitH=()=>{h.hp--;h.inv=20;sfx('bossHit');puff(h.x+12,h.y+9,'#ffd84a',8,2);
+        if(h.hp<=0){h.alive=false;sfx('boom');G.shake=6;puff(h.x+12,h.y+9,'#ff4030',20,3);puff(h.x+12,h.y+9,'#c8ccd8',12,2);}};
+      if(G.atkBox&&overlap(G.atkBox,h)){if(h.inv<=0)hitH();}
+      else if(h.state!=='pop'&&overlap(G.P,h)){
+        if(G.P.vy>.5&&G.P.y+G.P.h-h.y<8){G.P.vy=keys.jump?-6:-5;if(h.inv<=0)hitH();}
+        else hurt(h.x+12);}}
     break;}
   case 4:{ // Griefilla: volteggia, strilla, picchiata
     const homeY=floorY-104,cx=(x0+x1)/2;
     const tx=cx-b.w/2+Math.sin(b.t*.02)*100;
     if(b.st==='idle'||b.st==='hover'){b.st='hover';b.k++;b.x+=(tx-b.x)*.2;b.y=homeY+Math.sin(b.t*.09)*6;
-      if(b.k%(low?45:65)===0){for(const vx of [-.9,0,.9])G.projs.push({type:'shriek',x:bx-4,y:b.y+18,w:8,h:8,vx,vy:1.6,life:200});sfx('screech');}
-      if(b.k>(low?120:170)){b.st='dive';b.k=0;const dx=px-bx,dy=floorY-26-(b.y+b.h/2),d=Math.hypot(dx,dy)||1;b.vx=dx/d*3.4;b.vy=dy/d*3.4;sfx('screech');}}
+      if(b.k%(low?45:65)===0){for(const vx of [-.9,0,.9])G.projs.push({type:'shriek',x:bx-4,y:b.y+18,w:8,h:8,vx,vy:1.6,life:200,bounce:vx!==0});sfx('screech');}
+      if(b.k>(low?120:170)){b.st='warn';b.k=0;b.again=false;sfx('screech');}}
+    else if(b.st==='warn'){ // lampeggia prima della picchiata
+      b.k++;b.y+=Math.sin(b.k*.8)*.6;
+      if(b.k>(b.again?18:30)){b.st='dive';b.k=0;const dx=px-bx,dy=floorY-26-(b.y+b.h/2),d=Math.hypot(dx,dy)||1;b.vx=dx/d*4.4;b.vy=dy/d*4.4;}}
     else if(b.st==='dive'){b.x=clamp(b.x+b.vx,x0,x1-b.w);b.y+=b.vy;if(b.y+b.h>=floorY-2){b.y=floorY-2-b.h;b.st='rest';b.k=0;G.shake=5;}}
-    else if(b.st==='rest'){b.k++;if(b.k>(low?35:50))b.st='rise';}
+    else if(b.st==='rest'){b.k++;
+      if(low&&!b.again&&b.k>14){b.st='hop';b.k=0;b.again=true;} // seconda picchiata quando è debole
+      else if(b.k>(low?35:50))b.st='rise';}
+    else if(b.st==='hop'){b.y-=3.6;b.x+=(cx-b.w/2-b.x)*.03;if(b.y<=floorY-84){b.st='warn';b.k=0;}}
     else if(b.st==='rise'){b.y-=1.6;b.x+=(tx-b.x)*.05;if(b.y<=homeY){b.st='hover';b.k=1;}}
     b.face=toP;
     break;}

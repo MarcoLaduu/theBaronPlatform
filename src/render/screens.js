@@ -8,11 +8,12 @@ import { ROSTER } from '../data/roster.js';
 import { BAR } from '../graphics/barux.js';
 import { BOSS_DEF } from '../graphics/bosses.js';
 import { padMsg, padMsgT, padType } from '../input.js';
-import { backBtn, band, drawFit, menuBG, menuItem, padIcon, panel, text, textWidth, wrap } from './draw.js';
+import { backBtn, band, drawFit, menuBG, menuItem, padIcon, panel, scrollText, text, textWidth, wrap } from './draw.js';
+import { resetScrollBox } from '../ui/scroll.js';
 import { drawHUD, drawWorld, hudText } from './world.js';
 import { CHEATS, CHEAT_LIST, devUnlock, isSeen, loadSave } from '../save.js';
 import { G } from '../state.js';
-import { AUDIO_BTN, G_COLS, PAUSE_STEP, PAUSE_Y, TITLE_STEP, TITLE_Y, aRect, cheatRect, galRect, levelRect } from '../ui/layout.js';
+import { AUDIO_BTN, G_COLS, PAUSE_STEP, PAUSE_Y, TITLE_STEP, TITLE_Y, aRect, cheatRect, choiceRect, galRect, levelRect } from '../ui/layout.js';
 import { clamp } from '../utils.js';
 import { BGS, THEMES, TILES, getTheme } from '../world/themes.js';
 
@@ -75,6 +76,7 @@ function drawAudioBtn(){
   else{r(6,4,1,2,'#e8b84a');r(7,3,1,1,'#e8b84a');r(7,6,1,1,'#e8b84a');r(8,1,1,2,'#e8b84a');r(9,3,1,4,'#e8b84a');r(8,7,1,2,'#e8b84a');}
 }
 function renderMain(){
+  resetScrollBox();
   if(G.state==='cheats'){
     if(G.cheatsFrom==='title')menuBG(.8);
     else{drawWorld();drawHUD();out.drawImage(buf,0,0,W*S,H*S);out.fillStyle='rgba(10,4,8,.86)';out.fillRect(0,0,W*S,H*S);}
@@ -138,7 +140,7 @@ function renderAch(){
   if(hidden)text('?',955,250,120,'#5a4050','center',700);else drawFit(a.ic(),700,150,510,200,!open);
   text(hidden?'???':a.n,705,395,32,open?'#f3e3c3':'#b8a898','left',700);
   text(a.c,705,438,21,'#e8b84a','left',600);
-  wrap(hidden?'Obiettivo segreto: continua a giocare per scoprirlo.':a.d,705,484,500,30,22,'#d8c8b8');
+  scrollText('a'+G.selA,hidden?'Obiettivo segreto: continua a giocare per scoprirlo.':a.d,705,469,485,88,30,22,'#d8c8b8');
   if(a.stat&&!hidden&&a.goal>1){const v=Math.min(a.goal,AST.s[a.stat]||0);
     out.fillStyle='#2a1420';out.fillRect(705,570,500,18);out.fillStyle=open?'#2fb06a':'#e8b84a';out.fillRect(705,570,Math.round(500*v/a.goal),18);
     text(v+' / '+a.goal,1205,605,20,'#b8a898','right',400);}
@@ -195,6 +197,13 @@ function renderMenus(){
         text('Bloccato',r.x+r.w/2,r.y+155,22,'#8a7a7a','center',400);}
     }
     text('Ogni livello si sblocca raggiungendolo nella storia',640,680,22,'#9a8476','center',400);
+    if(G.lvlChoice){const ch=G.lvlChoice;
+      out.fillStyle='rgba(10,4,8,.78)';out.fillRect(0,0,W*S,H*S);
+      panel(360,190,560,330);
+      text('LIVELLO '+(ch.i+1)+' · '+THEMES[ch.i].name,640,236,24,'#e8b84a','center',700);
+      text('Modalità sviluppo (solo in locale)',640,268,17,'#9a8476','center',400);
+      ['Livello completo','Vai subito al boss'].forEach((l,i)=>{const r=choiceRect(i);menuItem(l,640,r.y+r.h/2,i===ch.sel);});
+      text('INVIO per scegliere · ESC per annullare',640,488,17,'#9a8476','center',400);}
     return;
   }
   if(G.state==='ach'){renderAch();return;}
@@ -212,11 +221,11 @@ function renderMenus(){
   if(open){
     text(r.name,640,438,36,'#f3e3c3','left',700);
     text(r.role,640,482,22,'#e8b84a','left',600);
-    wrap(r.desc,640,532,550,32,23,'#d8c8b8');
+    scrollText('g'+G.selG,r.desc,640,516,540,140,32,23,'#d8c8b8');
   } else {
     text('???',640,438,36,'#8a7a7a','left',700);
     text(r.role.split(' · ')[0]+' · ???',640,482,22,'#8a6a40','left',600);
-    wrap(r.boss!=null?'Sconfiggi questo boss nella storia per sbloccare la sua scheda.':'Sconfiggi almeno uno di questi nemici per sbloccare la sua scheda.',640,532,550,32,23,'#8a7a7a');
+    scrollText('g'+G.selG,r.boss!=null?'Sconfiggi questo boss nella storia per sbloccare la sua scheda.':'Sconfiggi almeno uno di questi nemici per sbloccare la sua scheda.',640,516,540,140,32,23,'#8a7a7a');
   }
   text('Frecce per sfogliare · ESC per tornare',640,700,18,'#9a8476','center',400);
 }

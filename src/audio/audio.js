@@ -28,6 +28,7 @@ const SFX={
   die:()=>{[392,330,262,196].forEach((f,i)=>tone('square',f,0,.18,.08,i*.15));},
   throw:()=>tone('triangle',200,500,.12,.08),
   cast:()=>tone('sawtooth',800,200,.3,.05),
+  hoof:()=>{noise(.05,.14,1700);tone('square',150,110,.04,.03);},
   slam:()=>{noise(.3,.3,200);tone('sine',90,40,.3,.2);},
   charge:()=>tone('sawtooth',120,240,.4,.06),
   screech:()=>tone('sawtooth',1400,600,.3,.05),

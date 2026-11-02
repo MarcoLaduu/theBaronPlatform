@@ -12,3 +12,5 @@ export const inRect=(p,r)=>p.x>=r.x&&p.x<=r.x+r.w&&p.y>=r.y&&p.y<=r.y+r.h;
 export const backHit=()=>tapPos&&inRect(tapPos,{x:30,y:30,w:230,h:60});
 export function levelRect(i){return {x:70+(i%3)*390,y:150+(i/3|0)*250,w:360,h:220};}
 export function galRect(i){return {x:50+(i%G_COLS)*102,y:140+(i/G_COLS|0)*102,w:92,h:92};}
+// Solo in locale: finestra di scelta "livello completo / vai al boss" nella selezione livelli.
+export function choiceRect(i){return {x:410,y:300+i*80,w:460,h:60};}

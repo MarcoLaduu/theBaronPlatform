@@ -10,10 +10,10 @@ import { die, hurt, newPlayer, respawn, updatePlayer } from '../entities/player.
 import { updateProjs } from '../entities/projectiles.js';
 import { confirmHit, hit, menuOK, pollPad, tapPos, tickPad } from '../input.js';
 import { INTRO, render } from '../render/screens.js';
-import { CHEATS, CHEAT_LIST, helpSeen, loadSave, markHelpSeen, markSeen, save, saveCheats, startLives } from '../save.js';
+import { CHEATS, CHEAT_LIST, IS_DEV, helpSeen, loadSave, markHelpSeen, markSeen, save, saveCheats, startLives } from '../save.js';
 import { checkOrientation, syncTouchUI } from '../mobile.js';
 import { G, cam } from '../state.js';
-import { AUDIO_BTN, G_COLS, PAUSE_STEP, PAUSE_Y, TITLE_STEP, TITLE_Y, aRect, backHit, cheatRect, galRect, inRect, levelRect } from '../ui/layout.js';
+import { AUDIO_BTN, G_COLS, choiceRect, PAUSE_STEP, PAUSE_Y, TITLE_STEP, TITLE_Y, aRect, backHit, cheatRect, galRect, inRect, levelRect } from '../ui/layout.js';
 import { clamp, overlap } from '../utils.js';
 import { genLevel } from '../world/level.js';
 import { tileAt } from '../world/physics.js';
@@ -88,11 +88,21 @@ function step(){
     if(menuOK())items[G.menuSel].act();
     break;}
   case 'levels':{G.titleX+=.4;const max=loadSave();
+    // solo in locale: dopo aver scelto un livello si decide se giocarlo tutto o andare dritti al boss
+    if(G.lvlChoice){const ch=G.lvlChoice;
+      if(hit.up||hit.down||hit.left||hit.right)ch.sel=1-ch.sel;
+      if(hit.pause){G.lvlChoice=null;break;}
+      let act=-1;
+      if(hit.tap&&tapPos){for(let i=0;i<2;i++)if(inRect(tapPos,choiceRect(i)))act=i;if(act<0)G.lvlChoice=null;}
+      else if(menuOK())act=ch.sel;
+      if(act>=0){G.lvlChoice=null;startLevel(ch.i,act===1);}
+      break;}
+    const pick=i=>{if(IS_DEV)G.lvlChoice={i,sel:0};else startLevel(i);};
     if(hit.right)G.selL=Math.min(5,G.selL+1);if(hit.left)G.selL=Math.max(0,G.selL-1);
     if(hit.down)G.selL=Math.min(5,G.selL+3);if(hit.up)G.selL=Math.max(0,G.selL-3);
     if(hit.pause){G.state='title';break;}
-    if(hit.tap&&tapPos){if(backHit()){G.state='title';break;}for(let i=0;i<6;i++){const r=levelRect(i);if(inRect(tapPos,r)){G.selL=i;if(i<=max)startLevel(i);}}break;}
-    if(menuOK()&&G.selL<=max)startLevel(G.selL);
+    if(hit.tap&&tapPos){if(backHit()){G.state='title';break;}for(let i=0;i<6;i++){const r=levelRect(i);if(inRect(tapPos,r)){G.selL=i;if(i<=max)pick(i);}}break;}
+    if(menuOK()&&G.selL<=max)pick(G.selL);
     break;}
   case 'gallery':{G.titleX+=.4;const n=ROSTER.length;
     if(hit.right)G.selG=Math.min(n-1,G.selG+1);if(hit.left)G.selG=Math.max(0,G.selG-1);
@@ -150,7 +160,10 @@ export function titleItems(){const sv=loadSave(),it=[{label:'Nuova partita',act:
   it.push({label:'Obiettivi',act:()=>{G.state='ach';G.selA=0;}});
   it.push({label:'Trucchi',act:()=>{G.cheatsFrom='title';G.cheatSel=0;G.state='cheats';}});
   return it;}
-function startLevel(i){G.gameRun={fromStart:false,deaths:0,damaged:false};G.lives=startLives();G.coins=0;loadLevel(i);G.state='card';G.stT=0;music(THEMES[i].song);}
+function startLevel(i,toBoss=false){G.gameRun={fromStart:false,deaths:0,damaged:false};G.lives=startLives();G.coins=0;loadLevel(i);
+  // "Vai al boss" (solo in locale): il Barone parte all'ingresso dell'arena, e anche il checkpoint è lì
+  if(toBoss){const x=(G.lvl.A+1)*T+4,y=(ROWS-3)*T-20;G.checkpoint={x,y};G.P=newPlayer(x,y);cam.x=G.lvl.A*T;}
+  G.state='card';G.stT=0;music(THEMES[i].song);}
 function camera0(){cam.x=0;cam.y=ROWS*T-H;}
 function startGame(cont){
   G.lives=startLives();G.coins=0;G.gameRun={fromStart:!cont,deaths:0,damaged:false};

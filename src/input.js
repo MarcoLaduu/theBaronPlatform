@@ -3,6 +3,7 @@ import { muted, setMute, unlockAudio } from './audio/audio.js';
 import { scr } from './canvas.js';
 import { H, S, W } from './config.js';
 import { G } from './state.js';
+import { inScrollBox, scrollBy } from './ui/scroll.js';
 
 export const keys={},hit={};
 const MAP={ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',ArrowUp:'jump',KeyW:'jump',Space:'jump',KeyZ:'jump',KeyX:'attack',KeyJ:'attack',KeyK:'attack',Enter:'start',KeyP:'pause',Escape:'pause',KeyM:'mute',KeyC:'cont',Backspace:'pause',ArrowDown:'down',KeyS:'down'};
@@ -10,6 +11,13 @@ addEventListener('keydown',e=>{const a=MAP[e.code];unlockAudio();if(!a)return;e.
 addEventListener('keyup',e=>{const a=MAP[e.code];if(a)keys[a]=false;});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false;});
 export let tapPos=null;
+// Rotellina e trascinamento col dito per far scorrere le descrizioni lunghe.
+const toOut=e=>{const r=scr.getBoundingClientRect();return {x:(e.clientX-r.left)/r.width*W*S,y:(e.clientY-r.top)/r.height*H*S};};
+scr.addEventListener('wheel',e=>{const p=toOut(e);if(inScrollBox(p.x,p.y)&&scrollBy(e.deltaY*.6))e.preventDefault();},{passive:false});
+let dragY=null;
+scr.addEventListener('pointerdown',e=>{const p=toOut(e);dragY=inScrollBox(p.x,p.y)?p.y:null;});
+scr.addEventListener('pointermove',e=>{if(dragY==null)return;const p=toOut(e);scrollBy(dragY-p.y);dragY=p.y;});
+addEventListener('pointerup',()=>{dragY=null;});
 scr.addEventListener('pointerdown',e=>{unlockAudio();const r=scr.getBoundingClientRect();tapPos={x:(e.clientX-r.left)/r.width*W*S,y:(e.clientY-r.top)/r.height*H*S};hit.tap=true;});
 document.querySelectorAll('#touch button').forEach(b=>{
   const k=b.dataset.k;

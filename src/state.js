@@ -5,7 +5,7 @@ export const G={
   pauseSel:0,selL:0,selG:0,cheatSel:0,cheatsFrom:'title',selA:0,menuSel:0,titleX:0,
   levelRun:{damaged:false,stomped:false,kills:0,frames:0,coins:0,coinTotal:0,bossHit:false},
   gameRun:{fromStart:false,deaths:0,damaged:false},
-  oneUpT:0,helpFrom:'play',
+  oneUpT:0,lvlChoice:null,helpFrom:'play',
   lives:3,coins:0,levelStartCoins:0,frame:0,stT:0,shake:0,checkpoint:null,
 };
 export const cam={x:0,y:0};
