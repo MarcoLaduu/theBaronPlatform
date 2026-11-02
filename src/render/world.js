@@ -5,7 +5,7 @@ import { BAR } from '../graphics/barux.js';
 import { BOSS_DEF, BOSS_SPR } from '../graphics/bosses.js';
 import { KINDS } from '../graphics/enemies.js';
 import { COIN, HEART, HEART_E } from '../graphics/items.js';
-import { band, text, triFill } from './draw.js';
+import { band, text, textWidth, triFill } from './draw.js';
 import { CHEATS, devUnlock } from '../save.js';
 import { G, cam } from '../state.js';
 import { BGS, LH, LW, THEMES } from '../world/themes.js';
@@ -83,13 +83,26 @@ export function drawWorld(){
       for(let r=0;r<4;r++){const ww=Math.max(0,w-r*3);if(ww<=0)break;px(x+12-ww,y+j,ww*2,1,cols[(r+(G.frame>>3)+(j>>3))%4]);}}
     if(G.frame%6===0)G.parts.push({x:G.portal.x+12+(Math.random()-.5)*20,y:G.portal.y+36,vx:0,vy:-.8,life:30,col:'#e8b84a',g:0});}
   // boss
+  if(G.boss&&G.boss.lava){const L=G.boss.lava,ax0=(G.lvl.A+1)*T,ax1=(G.lvl.A+19)*T,mid=(ax0+ax1)/2; // lava della seconda fase di Anlaucer
+    const zx=(L.side<0?ax0:mid)-cx,zw=(ax1-ax0)/2,fy=floorY-cy;
+    if(L.ph==='warn'){ctx.globalAlpha=(G.frame>>3)%2?.55:.25;px(zx,fy,zw,16,'#ff3020');ctx.globalAlpha=1;if((G.frame>>3)%2)px(zx,fy,zw,2,'#ffb040');}
+    else if(L.ph==='on'||(L.ph==='off'&&L.k<30)){ctx.globalAlpha=L.ph==='on'?1:1-L.k/30;
+      px(zx,fy-1,zw,17,'#c8300a');px(zx,fy+6,zw,10,'#8a1a08');
+      for(let x=0;x<zw;x+=4){const h=2+(Math.sin((x+cx)*.25+G.frame*.12)>0?1:0);px(zx+x,fy-1-h,4,h+1,'#ff7020');
+        if(((x>>2)+(G.frame>>4))%5===0)px(zx+x+1,fy,2,2,'#ffd060');}
+      ctx.globalAlpha=1;}}
+  if(G.boss&&G.boss.st==='anla'&&G.boss.k<70&&(G.frame>>2)%2){const ax0=(G.lvl.A+1)*T;ctx.globalAlpha=.6;px(ax0-cx,G.boss.anlaY+6-cy,18*T,2,'#ff60c0');ctx.globalAlpha=1;} // avviso: linea dove passerà il raggio
   if(G.boss){const b=G.boss,sp=BOSS_SPR[b.i],face=b.face>0;
     let img=((b.inv>0&&(b.inv>>1)%2)||(b.i===4&&b.st==='warn'&&(G.frame>>2)%2))?(face?sp.wr:sp.wl):(face?sp.r:sp.l);
     const sw=img.width,sh=img.height;
     let bx=Math.round(b.x+b.w/2-sw/2-cx),by=Math.round(b.y+b.h-sh-cy);
     if(b.st==='dying'){bx+=Math.round((Math.random()-.5)*4);if((b.k>>2)%2)img=face?sp.wr:sp.wl;}
     ctx.globalAlpha=b.alpha??1;
-    if(b.i===4){const fl=(G.frame>>2)%2;ctx.drawImage(img,bx,by+(fl?2:0),sw,sh-(fl?4:0));}
+    if(b.i===5&&b.big){ // seconda fase: più grande e incandescente
+      ctx.save();ctx.filter='saturate(1.7) brightness(1.15)';
+      ctx.drawImage(img,Math.round(b.x+b.w/2-sw*1.25/2-cx),Math.round(b.y+b.h-sh*1.25-cy),Math.round(sw*1.25),Math.round(sh*1.25));ctx.restore();}
+    else if(b.i===5&&b.st==='transform'&&b.k<70&&(b.k>>2)%2){ctx.drawImage(face?sp.wr:sp.wl,bx+((G.frame>>1)%2?1:-1),by);}
+    else if(b.i===4){const fl=(G.frame>>2)%2;ctx.drawImage(img,bx,by+(fl?2:0),sw,sh-(fl?4:0));}
     else if(b.i===2&&(b.st==='cling'||b.st==='toWall')){ // aggrappato al muro: ruotato di 90° con le zampe verso la parete
       const u=b.st==='cling'?1:Math.min(1,b.k/40),ang=(b.wallDir>0?1:-1)*Math.PI/2*u;
       ctx.save();ctx.translate(Math.round(b.x+b.w/2-cx),Math.round(b.y+b.h/2-cy));ctx.rotate(ang);ctx.drawImage(img,-sw/2,-sh/2);ctx.restore();}
@@ -119,6 +132,9 @@ export function drawWorld(){
     else if(q.type==='rock'){const sy=floorY-cy-2,near=q.warn<=0?1:Math.max(.3,1-q.warn/60);
       if(q.warn>0?(q.warn>>2)%2:true){const w=Math.round(6+8*near);px(x+6-w/2,sy,w,2,'#0a0a10');}
       if(q.warn<=0){px(x+2,y,8,12,'#1a1c28');px(x,y+2,12,8,'#1a1c28');px(x+2,y+1,8,10,'#5a5e72');px(x+1,y+2,10,8,'#5a5e72');px(x+3,y+2,4,3,'#8a8ea2');px(x+7,y+7,3,2,'#3a3e52');}}
+    else if(q.type==='anla'){const d=q.vx>0?1:-1;
+      for(let i=0;i<q.w;i+=2){const t=d>0?i/q.w:1-i/q.w,hh=Math.round(4+10*t),w2=Math.sin(i*.5+G.frame*.6)>0;
+        px(x+i,y+7-hh/2,2,hh,t>.8?'#ffffff':w2?'#ff60c0':'#c040a0');if(t>.3)px(x+i,y+7-hh/4,2,hh/2,'#ffd0f0');}}
     else if(q.type==='beam'){px(x,y,6,6,'#8a1010');px(x+1,y+1,4,4,'#ff4030');px(x+2,y+2,2,2,'#ffd0c0');}
     else if(q.type==='shriek'){const r=G.frame%10<5;px(x,y+2,8,4,r?'#d04aa0':'#8a3a9a');px(x+2,y,4,8,r?'#d04aa0':'#8a3a9a');px(x+2,y+2,4,4,'#120818');}
     else if(q.type==='wave'){px(x,y+4,10,4,'#8a7a5a');px(x+2,y+1,6,3,'#b0a07a');px(x+3,y,4,1,'#ffffff');}
@@ -171,10 +187,28 @@ export function drawHUD(){
   ctx.drawImage(BAR.idle[0],0,0,16,15,W-46,3,16,15);
   if(G.boss&&G.fight){const bw=150,x0=(W-bw)/2,y0=H-10;px(x0-2,y0-2,bw+4,7,'#0a0408');px(x0,y0,bw,3,'#3a1a20');px(x0,y0,Math.round(bw*Math.max(0,G.boss.hp)/G.boss.max),3,G.boss.i===5?'#ff5a2a':'#d8344a');px(x0,y0,Math.round(bw*Math.max(0,G.boss.hp)/G.boss.max),1,'#ff9aa8');}
 }
+// fumetto in pixel art sopra la testa del boss, spostato verso il centro dell'arena
+function speechBubble(b,str){
+  const u=S,size=44,tw=textWidth(str,size,700),bw=Math.ceil((tw+14*u)/u)*u,bh=16*u;
+  const hx=(b.x+b.w/2-cam.x)*S,hy=(b.y-cam.y)*S,side=b.dir<0?1:-1; // il fumetto va verso il centro
+  let x=Math.round(hx+side*6*u-(side<0?bw:0)),y=Math.round(hy-bh-10*u);
+  x=Math.max(2*u,Math.min(W*S-bw-2*u,x));y=Math.max(2*u,y);
+  const pop=b.shout>92?(100-b.shout)/8:1;out.save();out.translate(hx,y+bh);out.scale(pop,pop);out.translate(-hx,-(y+bh));
+  const rect=(rx,ry,rw,rh,c)=>{out.fillStyle=c;out.fillRect(rx,ry,rw,rh);};
+  const body=(o,c)=>{rect(x+u-o,y-o,bw-2*u+2*o,bh+2*o,c);rect(x-o,y+u-o,bw+2*o,bh-2*u+2*o,c);};
+  const tx=side>0?x+4*u:x+bw-10*u,tail=(o,c)=>{for(let i=0;i<6;i++)rect(tx-side*i*u+(side<0?i*u:0)-o,y+bh+i*u-u,(6-i)*u+2*o,u+o,c);};
+  body(u,'#0a0408');tail(u,'#0a0408');body(0,'#fff4fa');tail(0,'#fff4fa');
+  rect(x+u,y+bh-2*u,bw-2*u,u,'#f0c8dc'); // ombra interna
+  const j=(G.frame>>1)%2?u/2:-u/2;
+  out.font=`700 ${size}px 'Pixelify Sans','Courier New',monospace`;out.textAlign='center';out.textBaseline='middle';
+  out.fillStyle='#c02070';out.fillText(str,x+bw/2+j,y+bh/2+u/2);
+  out.restore();
+}
 export function hudText(){
   text(String(G.coins),16*S+6,20*S,30,'#f3e3c3','left');
   if(CHEATS.lives||CHEATS.god||CHEATS.kill||devUnlock())text('TRUCCHI ATTIVI',6*S,30*S,18,'#e8b84a','left',600);
   text('×'+Math.max(0,G.lives),(W-28)*S,10*S,30,'#f3e3c3','left');
   if(G.boss&&G.fight){const d=BOSS_DEF[G.boss.i];text(d.name,W*S/2,(H-17)*S,28,'#f3e3c3');
+    if(G.boss.shout>0)speechBubble(G.boss,'ANLACI!!');
     if(G.boss.intro>0){const a=Math.min(1,G.boss.intro/20,(120-G.boss.intro)/20);out.globalAlpha=a;band(150,170);text(d.sub.toUpperCase(),W*S/2,195,26,'#e8b84a');text(d.name,W*S/2,262,64,'#f3e3c3','center',700);out.globalAlpha=1;}}
 }

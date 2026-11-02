@@ -15,17 +15,18 @@ export function updateProjs(){
       if(q.warn>0)q.warn--;
       else{q.vy=Math.min(q.vy+.2,5);q.y+=q.vy;if(q.y+q.h>=floorY){q.life=0;puff(q.x+6,floorY-4,'#8a8ea2',10,1.8);G.shake=Math.max(G.shake,3);sfx('hoof');}}}
     else if(q.type==='barrel'){q.vy=Math.min(q.vy+.25,6);moveBody(q);q.rot+=q.vx*.3;if(q.hitWall||q.y>ROWS*T){q.life=0;puff(q.x+5,q.y+5,q.coin?'#f0c040':'#8a5428',8,1.5);}}
+    else if(q.type==='anla'){q.x+=q.vx;if(q.x>(G.lvl.A+20)*T||q.x+q.w<G.lvl.A*T)q.life=0;}
     else if(q.type==='wave'){q.x+=q.vx;if(solidAt(q.vx>0?q.x+q.w:q.x,q.y+4))q.life=0;}
     else if(q.type==='thorn'){q.ph++;if(q.ph===q.warn){sfx('kill');}if(q.ph>q.warn+42)q.life=0;}
     else if(q.type==='shriek'&&q.bounce&&q.vy>0&&solidAt(q.x+q.w/2,q.y+q.h+q.vy)){ // gli strilli laterali rimbalzano una volta
-      q.bounce=false;q.vy=-q.vy*.85;q.vx*=1.3;puff(q.x+4,q.y+q.h,'#d04aa0',4,1);}
-    else{q.x+=q.vx;q.y+=q.vy;if(solidAt(q.x+q.w/2,q.y+q.h/2)){q.life=0;puff(q.x+4,q.y+4,q.type==='fire'?'#ff6020':'#9ae02a',5,1);}
+      q.bounce=false;q.bounced=true;q.vy=-q.vy*.85;q.vx*=1.3;puff(q.x+4,q.y+q.h,'#d04aa0',4,1);}
+    else{if(q.bounced)q.vy+=.035;q.x+=q.vx;q.y+=q.vy;if(solidAt(q.x+q.w/2,q.y+q.h/2)){q.life=0;puff(q.x+4,q.y+4,q.type==='fire'?'#ff6020':'#9ae02a',5,1);}
       if(q.type==='fire'&&G.frame%3===0)G.parts.push({x:q.x+4,y:q.y+4,vx:0,vy:0,life:10,col:'#ff9030',g:0});}
     if(q.life<=0)continue;
     if(q.type==='thorn'){if(q.ph>q.warn){const hg=Math.min(28,(q.ph-q.warn)*4);if(overlap(G.P,{x:q.x+1,y:floorY-hg,w:10,h:hg}))hurt(q.x+6);}}
     else{
-      if(G.atkBox&&q.type!=='wave'&&q.type!=='sonic'&&overlap(G.atkBox,q)){q.life=0;stat('proj');puff(q.x+4,q.y+4,'#ffffff',6,1.4);sfx('kill');continue;}
-      if(overlap(G.P,q)){hurt(q.x+q.w/2);if(q.type!=='wave'&&q.type!=='barrel')q.life=0;}
+      if(G.atkBox&&q.type!=='wave'&&q.type!=='sonic'&&q.type!=='anla'&&overlap(G.atkBox,q)){q.life=0;stat('proj');puff(q.x+4,q.y+4,'#ffffff',6,1.4);sfx('kill');continue;}
+      if(overlap(G.P,q)){hurt(q.x+q.w/2);if(q.type!=='wave'&&q.type!=='barrel'&&q.type!=='anla')q.life=0;}
     }
   }
   G.projs=G.projs.filter(q=>q.life>0);

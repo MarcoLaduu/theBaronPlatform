@@ -35,7 +35,7 @@ export const ROSTER=[
  {id:'boss4',boss:4,desc:'Pipistrella gigante della torre. Strilla onde sonore e si getta in picchiata sulle prede.'},
  {id:'imp',name:'Diavoletto',lv:5,desc:'Evocato da Anlaucer. Piccolo, rosso e molto fastidioso.'},
  {id:'skull',name:'Teschio infuocato',lv:5,desc:'Teschio avvolto dalle fiamme che piomba sugli intrusi della fortezza.'},
- {id:'boss5',boss:5,desc:'Il demone nato dall’anlaciamento eccessivo del Barone. Palle di fuoco, diavoletti e voli radenti.'}];
+ {id:'boss5',boss:5,desc:'Il demone nato dall’anlaciamento eccessivo del Barone. Palle di fuoco e voli radenti. Quando è ferito si trasforma e fa ribollire di lava il pavimento della fortezza.'}];
 for(const r of ROSTER){
   if(r.boss!=null){const d=BOSS_DEF[r.boss];r.name=d.name;r.role=(r.boss===5?'Boss finale':'Boss')+' · '+THEMES[r.boss].name;r.img=r.boss===3?rekterImg:()=>BOSS_SPR[r.boss].r;}
   else if(r.lv!=null){r.role='Scagnozzo · '+THEMES[r.lv].name;r.img=()=>KINDS[r.id].fr[0];}

@@ -12,6 +12,8 @@ import { clamp, overlap } from '../utils.js';
 import { moveBody } from '../world/physics.js';
 import { THEMES } from '../world/themes.js';
 
+const PLAT_ROWS=[ROWS-6]; // riga delle piattaforme sopra la lava (48 px sopra il pavimento)
+const PLAT_COLS=[3,4,5,9,10,14,15,16];
 function arena(){return {x0:(G.lvl.A+1)*T,x1:(G.lvl.A+19)*T};}
 export function startFight(){
   G.fight=true;G.levelRun.bossHit=false;for(let r=0;r<ROWS;r++)G.lvl.g[r][G.lvl.A]='#';
@@ -19,7 +21,8 @@ export function startFight(){
   G.boss={i:G.lvlIndex,x:x1-50-d.w,y:floorY-d.h,w:d.w,h:d.h,vx:0,vy:0,hp:d.hp,max:d.hp,t:0,k:0,st:'idle',dir:-1,face:-1,inv:0,intro:120,alpha:1,visible:true};
   if(G.boss.i===1)G.boss.baseY=floorY-d.h-4;
   if(G.boss.i===4)G.boss.y=floorY-104;
-  if(G.boss.i===5)G.boss.y=floorY-84;
+  if(G.boss.i===5){G.boss.y=floorY-84; // toglie le piattaforme della seconda fase rimaste da un tentativo precedente
+    for(const r of PLAT_ROWS)for(let c=G.lvl.A+1;c<G.lvl.A+19;c++)if(G.lvl.g[r][c]==='-')G.lvl.g[r][c]=' ';}
   music(3);sfx('roar');G.shake=6;
 }
 function damageBoss(){
@@ -30,6 +33,9 @@ function damageBoss(){
     b.phase2=true;b.inv=60;b.st='wake';b.k=0;b.vx=0;G.shake=12;sfx('boom');
     puff(b.x+b.w/2,b.y+6,'#c8ccd8',24,3);puff(b.x+b.w/2,b.y+6,'#9a6ad8',12,2);
     b.helm={x:b.x+b.w/2-12,y:b.y-4,w:24,h:18,vy:-4.5,t:0,hp:2,inv:50,alive:true,state:'pop'};}
+  // Anlaucer, seconda fase: a metà vita si trasforma e il pavimento inizia a ribollire di lava
+  if(b.i===5&&!b.phase2&&b.hp>0&&b.hp<=b.max/2){
+    b.phase2=true;b.st='transform';b.k=0;b.inv=140;G.projs=[];G.shake=10;sfx('roar');}
   if(G.boss.hp<=0&&b.helm&&b.helm.alive){b.helm.alive=false;puff(b.helm.x+12,b.helm.y+9,'#ff4030',20,3);}
   if(G.boss.hp<=0){G.boss.st='dying';G.boss.k=0;G.projs=[];G.ents.forEach(e=>{if(e.summoned&&e.alive){e.alive=false;puff(e.x+5,e.y+6,'#c42c38',8);}});}
 }
@@ -37,6 +43,7 @@ export function updateBoss(){
   const b=G.boss;
   if(b.intro>0){b.intro--;if(b.i===0||b.i===2||b.i===3){b.vy=Math.min(b.vy+.35,6);b.vx=0;moveBody(b);}return;}
   if(b.inv>0)b.inv--;
+  if(b.shout>0)b.shout--;
   b.t++;
   const {x0,x1}=arena();
   const px=G.P.x+G.P.w/2,bx=b.x+b.w/2,toP=px<bx?-1:1,low=b.hp<=b.max/2;
@@ -137,21 +144,46 @@ export function updateBoss(){
     break;}
   case 5:{ // Anlaucer
     const homeY=floorY-84,cx=(x0+x1)/2;
-    if(b.st==='idle'||b.st==='hover'){b.st='hover';b.k++;b.face=toP;
+    if(b.lava){ // lava a metà pavimento: avviso, lava attiva, pausa, poi l'altra metà
+      const L=b.lava;L.k++;
+      if(L.ph==='warn'&&L.k>80){L.ph='on';L.k=0;sfx('fire');G.shake=Math.max(G.shake,4);}
+      else if(L.ph==='on'&&L.k>220){L.ph='off';L.k=0;}
+      else if(L.ph==='off'&&L.k>70){L.ph='warn';L.k=0;L.side*=-1;sfx('cast');}
+      const zx0=L.side<0?x0:cx,zx1=L.side<0?cx:x1;
+      if(L.ph==='on'){const P=G.P;
+        if(P.onGround&&P.y+P.h>=floorY-1&&P.x+P.w>zx0+2&&P.x<zx1-2)hurt(L.side<0?P.x-10:P.x+P.w+10);
+        if(b.t%4===0)G.parts.push({x:zx0+Math.random()*(zx1-zx0),y:floorY-2,vx:0,vy:-.5-Math.random()*.6,life:22,col:Math.random()<.5?'#ff6020':'#ffd060',g:0});}}
+    if(b.st==='transform'){ // si trasforma: trema, si gonfia e fa comparire le piattaforme
+      b.k++;b.face=toP;b.x+=(cx-b.w/2-b.x)*.06;b.y+=(homeY-b.y)*.06;if(b.k<100)G.shake=Math.max(G.shake,3);
+      if(b.k%3===0)puff(b.x+Math.random()*b.w,b.y+Math.random()*b.h,b.k%2?'#ff6020':'#ffd060',3,2);
+      if(b.k===70){const ox=b.x+b.w/2,oy=b.y+b.h;b.w=Math.round(b.w*1.25);b.h=Math.round(b.h*1.25);b.x=ox-b.w/2;b.y=oy-b.h;b.big=true;
+        sfx('boom');G.shake=12;puff(ox,oy-b.h/2,'#ffffff',30,3.5);
+        for(const r of PLAT_ROWS)for(const c of PLAT_COLS){const cc=G.lvl.A+1+c;G.lvl.g[r][cc]='-';puff(cc*T+8,r*T+4,'#a87ae8',4,1.2);}}
+      if(b.k>130){b.st='hover';b.k=0;b.lava={side:px<cx?-1:1,ph:'warn',k:0};sfx('cast');}}
+    else if(b.st==='idle'||b.st==='hover'){b.st='hover';b.k++;b.face=toP;
       b.x+=(cx-b.w/2+Math.sin(b.t*.015)*90-b.x)*.05;b.y+=(homeY+Math.sin(b.t*.06)*8-b.y)*.1;
-      if(b.k>(low?55:90)){b.k=0;const r=Math.random(),imps=G.ents.filter(e=>e.alive&&e.summoned).length;
-        if(r<.4)b.st='fire';else if(r<.62&&imps<3)b.st='summon';else{b.st='swoop';b.dir=bx<cx?1:-1;b.ph=0;}}}
+      if(b.k>(low?55:90)){b.k=0;const r=Math.random(); // niente più diavoletti evocati: solo fuoco, voli radenti e (in fase 2) il raggio
+        if(b.big&&b.t-(b.lastAnla||0)>420&&r<.45){b.st='anla';b.k=0;}
+        else if(r<.55)b.st='fire';else{b.st='swoop';b.dir=bx<cx?1:-1;b.ph=0;}}}
+    else if(b.st==='anla'){ // raggio anlacioso: si sposta su un lato, carica e spara un raggio che attraversa l'arena
+      b.k++;
+      if(b.k===1){b.dir=bx<cx?-1:1;b.anlaLow=Math.random()<.5;b.anlaY=b.anlaLow?floorY-16:floorY-64;b.shout=100;sfx('roar');G.shake=6;}
+      const tx=b.dir<0?x0+2:x1-b.w-2,ty=b.anlaY+7-b.h/2;b.face=-b.dir;
+      b.x+=(tx-b.x)*.1;b.y+=(ty-b.y)*.1;
+      const mx=b.dir<0?b.x+b.w:b.x,my=b.anlaY+7;
+      if(b.k<70&&b.k%2===0){const a=Math.random()*6.28,d=18+Math.random()*10;G.parts.push({x:mx+Math.cos(a)*d,y:my+Math.sin(a)*d,vx:-Math.cos(a)*1.2,vy:-Math.sin(a)*1.2,life:14,col:b.k%4?'#ff60c0':'#ffd060',g:0});}
+      if(b.k===70){G.projs.push({type:'anla',x:b.dir<0?mx:mx-64,y:b.anlaY,w:64,h:14,vx:-b.dir*4.5,vy:0,life:200});sfx('fire');sfx('boom');G.shake=10;}
+      if(b.k>110){b.st='hover';b.k=0;b.lastAnla=b.t;}}
     else if(b.st==='fire'){b.k++;b.face=toP;
       if(b.k===20||b.k===50||(low&&b.k===80)){const n=low?7:5,base=Math.atan2(G.P.y+10-(b.y+b.h/2),px-bx);
         for(let j=0;j<n;j++){const a=base+(j-(n-1)/2)*.22;G.projs.push({type:'fire',x:bx-4,y:b.y+b.h/2-4,w:8,h:8,vx:Math.cos(a)*1.7,vy:Math.sin(a)*1.7,life:300});}sfx('fire');}
       if(b.k>(low?100:75)){b.st='hover';b.k=0;}}
-    else if(b.st==='summon'){b.k++;if(b.k===30){for(const sx of [x0+20,x1-32]){const e=spawnEnt({t:'en',kind:'imp',x:sx,y:floorY-60});e.summoned=true;e.dir=sx<cx?1:-1;G.ents.push(e);puff(sx+5,floorY-54,'#ff6020',12,2);}sfx('cast');}if(b.k>60){b.st='hover';b.k=0;}}
     else if(b.st==='swoop'){const sx=b.dir>0?x0+4:x1-b.w-4;b.face=b.dir;
       if(b.ph===0){b.x+=(sx-b.x)*.08;b.y+=(homeY-b.y)*.08;if(Math.abs(sx-b.x)<3)b.ph=1;}
       else if(b.ph===1){b.y+=2.2;if(b.y+b.h>=floorY-4){b.y=floorY-4-b.h;b.ph=2;sfx('roar');}}
       else if(b.ph===2){b.x+=b.dir*(low?3.2:2.5);if(b.x<=x0+2||b.x+b.w>=x1-2)b.ph=3;}
       else{b.y-=1.8;if(b.y<=homeY){b.st='hover';b.k=0;}}}
-    if(low&&b.t%6===0)G.parts.push({x:b.x+Math.random()*b.w,y:b.y+b.h,vx:0,vy:-.6,life:25,col:'#ff6020',g:0});
+    if(low&&b.t%(b.big?3:6)===0)G.parts.push({x:b.x+Math.random()*b.w,y:b.y+b.h,vx:0,vy:-.6,life:25,col:b.big&&b.t%2?'#ffd060':'#ff6020',g:0});
     break;}
   }
   // contatto con il giocatore
