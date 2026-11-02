@@ -24,7 +24,7 @@ export const padPrev={};
 export let padIdx=-1,padMsgT=0,padMsg='';
 addEventListener('gamepadconnected',e=>{padIdx=e.gamepad.index;padMsg='Controller collegato';padMsgT=180;});
 addEventListener('gamepaddisconnected',e=>{if(e.gamepad.index===padIdx){padIdx=-1;for(const a in padPrev)if(padPrev[a]){keys[a]=false;padPrev[a]=false;}padMsg='Controller scollegato';padMsgT=150;}});
-function getPad(){if(!navigator.getGamepads)return null;const list=navigator.getGamepads();if(padIdx>=0&&list[padIdx])return list[padIdx];for(const g of list)if(g&&g.connected){padIdx=g.index;return g;}return null;}
+export function getPad(){if(!navigator.getGamepads)return null;const list=navigator.getGamepads();if(padIdx>=0&&list[padIdx])return list[padIdx];for(const g of list)if(g&&g.connected){padIdx=g.index;return g;}return null;}
 export function pollPad(){
   const g=getPad();if(!g)return;
   const b=i=>!!(g.buttons[i]&&(g.buttons[i].pressed||g.buttons[i].value>.5));
@@ -47,3 +47,15 @@ export function tickPad(){if(padMsgT>0)padMsgT--;}
 export const confirmHit=()=>hit.start||hit.jump||hit.attack||hit.tap;
 export const menuOK=()=>hit.start||hit.attack||(hit.jump&&!hit.up);
 document.getElementById('pausebtn').addEventListener('pointerdown',e=>{e.preventDefault();unlockAudio();hit.pause=true;});
+
+// Tipo di controller collegato, per mostrare i nomi giusti dei pulsanti.
+// Nota: i browser rendono visibile il controller solo dopo che si è premuto un suo tasto.
+export function padType(){
+  const g=getPad();if(!g)return null;
+  const id=(g.id||'').toLowerCase();
+  // Xbox per primo: anche il suo nome contiene "Wireless Controller", come quello dei pad PlayStation.
+  if(/xbox|xinput|045e/.test(id))return 'xbox';
+  if(/054c|dualshock|dualsense|playstation|wireless controller/.test(id))return 'ps';
+  if(/057e|pro controller|nintendo|joy-con/.test(id))return 'switch';
+  return 'generic';
+}

@@ -22,7 +22,9 @@ Riprenditi il regno, Barone. A colpi di bastone.
 | Bastonata | `X`, `J` o `K` | X, B, Y / □, ○, △ | B |
 | Pausa | `P` o `Esc` | Start / Options | II |
 | Indietro nei menu | `Esc` | B / ○ | pulsante "Indietro" |
-| Audio on/off | `M` | — | pulsante sotto il gioco |
+| Audio on/off | `M`, oppure l'icona 🔊 in basso a destra (menu principale e pausa) | icona 🔊 nei menu | tocca l'icona 🔊 nei menu |
+
+La prima volta che giochi il Livello 1 compare la finestra **Come si gioca** con tutti i comandi, che si adatta a tastiera, touch o controller collegato; puoi riaprirla dal menu di pausa alla voce **Comandi**.
 
 Il gioco riconosce automaticamente i controller Xbox, PlayStation, Switch Pro e la maggior parte dei joypad USB o Bluetooth: basta collegarlo e premere un tasto. Quando subisci danni, il controller vibra (se lo supporta).
 

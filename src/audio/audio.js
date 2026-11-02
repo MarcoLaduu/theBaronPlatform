@@ -55,7 +55,7 @@ export function musicTick(){
   if(nextT<AC.currentTime)nextT=AC.currentTime+.02;
   while(nextT<AC.currentTime+.15){const m=s.mel[mstep%s.mel.length],b=s.bas[mstep%s.bas.length];if(m)note('square',m,nextT,sp*.9,.035);if(b)note('triangle',b,nextT,sp*1.5,.08);mstep++;nextT+=sp;}
 }
-const muteBtn=document.getElementById('mute');
-export function setMute(m){muted=m;try{localStorage.setItem('baruxMute',m?'1':'0');}catch(e){}if(master)master.gain.value=m?0:.55;muteBtn.textContent='Audio: '+(m?'spento':'acceso');}
-muteBtn.addEventListener('click',()=>{unlockAudio();setMute(!muted);});
-setMute(muted);
+export const isMuted=()=>muted;
+export function setMute(m){muted=m;try{localStorage.setItem('baruxMute',m?'1':'0');}catch(e){}if(master)master.gain.value=m?0:.55;}
+export function toggleMute(){unlockAudio();setMute(!muted);}
+export const audioLabel=()=>'Audio: '+(muted?'spento':'acceso');

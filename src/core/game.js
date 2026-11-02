@@ -1,5 +1,5 @@
 // Ciclo di gioco: stati, menu, livelli, avvio.
-import { music, musicTick, sfx } from '../audio/audio.js';
+import { music, musicTick, sfx, toggleMute } from '../audio/audio.js';
 import { H, ROWS, T, W } from '../config.js';
 import { puff, updateParts } from './particles.js';
 import { ACH, checkGallery, toasts, unlock } from '../data/achievements.js';
@@ -12,7 +12,7 @@ import { confirmHit, hit, menuOK, pollPad, tapPos, tickPad } from '../input.js';
 import { INTRO, render } from '../render/screens.js';
 import { CHEATS, CHEAT_LIST, helpSeen, loadSave, markHelpSeen, markSeen, save, saveCheats, startLives } from '../save.js';
 import { G, cam } from '../state.js';
-import { G_COLS, PAUSE_Y, TITLE_Y, aRect, backHit, cheatRect, galRect, inRect, levelRect } from '../ui/layout.js';
+import { AUDIO_BTN, G_COLS, PAUSE_STEP, PAUSE_Y, TITLE_STEP, TITLE_Y, aRect, backHit, cheatRect, galRect, inRect, levelRect } from '../ui/layout.js';
 import { clamp, overlap } from '../utils.js';
 import { genLevel } from '../world/level.js';
 import { tileAt } from '../world/physics.js';
@@ -81,7 +81,8 @@ function step(){
     if(G.menuSel>=n)G.menuSel=0;
     if(hit.down||hit.right)G.menuSel=(G.menuSel+1)%n;
     if(hit.up||hit.left)G.menuSel=(G.menuSel+n-1)%n;
-    if(hit.tap&&tapPos){items.forEach((it,i)=>{if(Math.abs(tapPos.y-(TITLE_Y+i*50))<28&&Math.abs(tapPos.x-820)<240){G.menuSel=i;it.act();}});break;}
+    if(hit.tap&&tapPos&&inRect(tapPos,AUDIO_BTN)){toggleMute();break;}
+    if(hit.tap&&tapPos){items.forEach((it,i)=>{if(Math.abs(tapPos.y-(TITLE_Y+i*TITLE_STEP))<28&&Math.abs(tapPos.x-820)<240){G.menuSel=i;it.act();}});break;}
     if(hit.cont&&loadSave()>0){startGame(true);break;}
     if(menuOK())items[G.menuSel].act();
     break;}
@@ -125,7 +126,8 @@ function step(){
     if(hit.down)G.pauseSel=(G.pauseSel+1)%5;if(hit.up)G.pauseSel=(G.pauseSel+4)%5;
     if(hit.pause){G.state='play';break;}
     let act=-1;
-    if(hit.tap&&tapPos){for(let i=0;i<5;i++)if(Math.abs(tapPos.y-(PAUSE_Y+i*56))<28&&Math.abs(tapPos.x-640)<240)act=i;}
+    if(hit.tap&&tapPos&&inRect(tapPos,AUDIO_BTN)){toggleMute();break;}
+    if(hit.tap&&tapPos){for(let i=0;i<5;i++)if(Math.abs(tapPos.y-(PAUSE_Y+i*PAUSE_STEP))<28&&Math.abs(tapPos.x-640)<240)act=i;}
     else if(menuOK())act=G.pauseSel;
     if(act===0)G.state='play';
     else if(act===1){G.coins=G.levelStartCoins;loadLevel(G.lvlIndex);G.state='card';G.stT=0;music(THEMES[G.lvlIndex].song);}

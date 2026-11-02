@@ -34,3 +34,12 @@ export function menuBG(dark){
   out.fillStyle=`rgba(12,4,10,${dark})`;out.fillRect(0,0,W*S,H*S);
 }
 export function backBtn(){out.fillStyle='rgba(92,22,38,.9)';out.fillRect(30,30,230,60);out.fillStyle='#e8b84a';out.fillRect(30,30,6,60);text('◂ Indietro',145,60,28,'#f3e3c3');}
+
+// Icona di un controller in pixel art (le emoji nel canvas venivano disegnate due volte, ombra compresa).
+const PAD_ICON=[".kkkkkkkkkk.","kbbbbbbbbbbk","kbwbbbbbbrbk","kwwwbbbbrbrk","kbwbbbbbbrbk","kbbbkkkkbbbk",".kkk....kkk."];
+export function padIcon(x,y,u,col){
+  const c={k:'#0a0408',b:col,w:'#f3e3c3',r:'#f3e3c3'};
+  PAD_ICON.forEach((row,j)=>{for(let i=0;i<row.length;i++){const ch=row[i];if(ch==='.')continue;out.fillStyle=c[ch];out.fillRect(x+i*u,y+j*u,u,u);}});
+}
+// Larghezza di un testo con il font del gioco (serve per affiancare un'icona).
+export function textWidth(s,size,weight=600){out.font=`${weight} ${size}px 'Pixelify Sans','Courier New',monospace`;return out.measureText(s).width;}

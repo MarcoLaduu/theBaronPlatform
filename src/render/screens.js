@@ -1,4 +1,5 @@
 // Schermate: titolo, livelli, galleria, obiettivi, trucchi, pausa.
+import { isMuted } from '../audio/audio.js';
 import { buf, out } from '../canvas.js';
 import { H, S, W } from '../config.js';
 import { titleItems } from '../core/game.js';
@@ -6,12 +7,12 @@ import { ACH, AST, cheatsOn, toasts } from '../data/achievements.js';
 import { ROSTER } from '../data/roster.js';
 import { BAR } from '../graphics/barux.js';
 import { BOSS_DEF } from '../graphics/bosses.js';
-import { padMsg, padMsgT } from '../input.js';
-import { backBtn, band, drawFit, menuBG, menuItem, panel, text, wrap } from './draw.js';
+import { padMsg, padMsgT, padType } from '../input.js';
+import { backBtn, band, drawFit, menuBG, menuItem, padIcon, panel, text, textWidth, wrap } from './draw.js';
 import { drawHUD, drawWorld, hudText } from './world.js';
 import { CHEATS, CHEAT_LIST, devUnlock, isSeen, loadSave } from '../save.js';
 import { G } from '../state.js';
-import { G_COLS, PAUSE_Y, TITLE_Y, aRect, cheatRect, galRect, levelRect } from '../ui/layout.js';
+import { AUDIO_BTN, G_COLS, PAUSE_STEP, PAUSE_Y, TITLE_STEP, TITLE_Y, aRect, cheatRect, galRect, levelRect } from '../ui/layout.js';
 import { clamp } from '../utils.js';
 import { BGS, THEMES, TILES, getTheme } from '../world/themes.js';
 
@@ -25,11 +26,14 @@ export const INTRO=[
 ];
 export function render(){renderMain();drawToast();}
 // ---------- finestra dei comandi ----------
-const HELP_ROWS=[
- ['Muoversi','← →  oppure  A D','Croce o levetta','◀ ▶'],
- ['Saltare','Spazio, ↑, W o Z','A / ✕','A'],
- ['Bastonata','X, J o K','X, B, Y / □ ○ △','B'],
- ['Pausa','P o Esc','Start / Options','II']];
+const HELP_ACTIONS=['Muoversi','Saltare','Bastonata','Pausa','Indietro nei menu'];
+const HELP_KEYS=['← →  oppure  A D','Spazio, ↑, W o Z','X, J o K','P o Esc','Esc'];
+const HELP_TOUCH=['◀ ▶','A','B','II','Indietro'];
+const HELP_PADS={
+  xbox:   {name:'Xbox',        keys:['Croce o levetta sinistra','A','X, B o Y','Start','B'],              ok:'A'},
+  ps:     {name:'PlayStation', keys:['Croce o levetta sinistra','✕','□, ○ o △','Options','○'],            ok:'✕'},
+  switch: {name:'Switch',      keys:['Croce o levetta sinistra','B','Y, A o X','+','A'],                  ok:'B'},
+  generic:{name:'',            keys:['Croce o levetta sinistra','Pulsante in basso','Altri pulsanti frontali','Start','Pulsante a destra'],ok:'il pulsante in basso'}};
 const HELP_TIPS=[
  'Tieni premuto il salto per saltare più in alto.',
  'Bastonata a terra: colpisce davanti al Barone.',
@@ -40,16 +44,35 @@ const HELP_TIPS=[
 function renderHelp(){
   out.fillStyle='rgba(10,4,8,.82)';out.fillRect(0,0,W*S,H*S);
   panel(70,30,1140,660);
-  text('COME SI GIOCA',640,85,44,'#e8b84a','center',700);
-  const touch=document.body.classList.contains('is-touch');
-  const cols=touch?[120,360,680,990]:[140,460,830];
-  const heads=['Azione','Tastiera','Controller'].concat(touch?['Touch']:[]);
-  heads.forEach((h,i)=>text(h.toUpperCase(),cols[i],148,18,'#9a8476','left',600));
-  out.fillStyle='#5c1626';out.fillRect(110,168,1060,3);
-  HELP_ROWS.forEach((r,j)=>{const y=200+j*46;r.slice(0,heads.length).forEach((c,i)=>text(c,cols[i],y,i===0?26:22,i===0?'#f3e3c3':'#d8c8b8','left',i===0?700:400));});
+  text('COME SI GIOCA',640,82,44,'#e8b84a','center',700);
+  // lo schema cambia in base a cosa si sta usando: controller, touch o tastiera
+  const pt=padType(),pad=pt&&HELP_PADS[pt],touch=!pad&&document.body.classList.contains('is-touch');
+  let heads,cols,colsData;
+  if(pad){heads=['Azione','Controller'+(pad.name?' '+pad.name:'')];cols=[140,520];colsData=[pad.keys];}
+  else if(touch){heads=['Azione','Touch','Tastiera'];cols=[140,520,820];colsData=[HELP_TOUCH,HELP_KEYS];}
+  else{heads=['Azione','Tastiera'];cols=[140,520];colsData=[HELP_KEYS];}
+  heads.forEach((h,i)=>text(h.toUpperCase(),cols[i],140,18,i===1?'#e8b84a':'#9a8476','left',600));
+  {const msg=pad?'Controller collegato':'Collega un controller per vedere i suoi comandi',col=pad?'#2fb06a':'#7a6a6a';
+   text(msg,1170,140,16,col,'right',400);padIcon(1170-textWidth(msg,16,400)-32,133,2,col);}
+  out.fillStyle='#5c1626';out.fillRect(110,160,1060,3);
+  HELP_ACTIONS.forEach((act,j)=>{const y=190+j*38;
+    text(act,cols[0],y,24,'#f3e3c3','left',700);
+    colsData.forEach((c,i)=>text(c[j],cols[i+1],y,21,'#d8c8b8','left',400));});
   out.fillStyle='#5c1626';out.fillRect(110,375,1060,3);
   HELP_TIPS.forEach((t,j)=>{text('•',130,410+j*38,22,'#e8b84a','left',700);text(t,155,410+j*38,21,'#d8c8b8','left',400);});
-  if(G.stT>20)text(G.helpFrom==='pause'?'Premi INVIO o tocca per tornare alla pausa':'Premi INVIO o tocca per iniziare a giocare',640,655,22,'#e8b84a','center',600);
+  if(G.stT>20){const btn=pad?pad.ok:(touch?'tocca':'INVIO'),how=pad?'Premi '+btn:(touch?'Tocca':'Premi INVIO o tocca');
+    text(how+(G.helpFrom==='pause'?' per tornare alla pausa':' per iniziare a giocare'),640,655,22,'#e8b84a','center',600);}
+}
+// Icona dell'altoparlante in pixel art: onde sonore se l'audio è acceso, una X rossa se è spento (tasto M o tocco).
+function drawAudioBtn(){
+  const b=AUDIO_BTN,u=4,ox=b.x+10,oy=b.y+8,m=isMuted();
+  out.fillStyle='rgba(18,8,16,.9)';out.fillRect(b.x,b.y,b.w,b.h);
+  out.strokeStyle=m?'#5c1626':'#e8b84a';out.lineWidth=3;out.strokeRect(b.x+1.5,b.y+1.5,b.w-3,b.h-3);
+  const r=(x,y,w,h,c)=>{out.fillStyle=c;out.fillRect(ox+x*u,oy+y*u,w*u,h*u);};
+  const ink=m?'#8a7a7a':'#f3e3c3';
+  r(0,3,2,4,ink);r(2,2,1,6,ink);r(3,1,1,8,ink);r(4,0,1,10,ink);
+  if(m){for(const [x,y] of [[6,2],[10,2],[7,3],[9,3],[8,4],[7,5],[9,5],[6,6],[10,6]])r(x,y+1,1,1,'#d8344a');}
+  else{r(6,4,1,2,'#e8b84a');r(7,3,1,1,'#e8b84a');r(7,6,1,1,'#e8b84a');r(8,1,1,2,'#e8b84a');r(9,3,1,4,'#e8b84a');r(8,7,1,2,'#e8b84a');}
 }
 function renderMain(){
   if(G.state==='cheats'){
@@ -72,7 +95,8 @@ function renderMain(){
     text('Sconfiggi '+BOSS_DEF[G.lvlIndex].name,cxm,430,30,'#d8b8a8');out.globalAlpha=1;
   } else if(G.state==='pause'){out.fillStyle='rgba(10,4,8,.6)';out.fillRect(0,0,W*S,H*S);band(140,470);
     text('PAUSA',cxm,208,64,'#f3e3c3','center',700);
-    ['Riprendi','Ricomincia il livello','Comandi','Trucchi','Torna al menu'].forEach((l,i)=>menuItem(l,cxm,PAUSE_Y+i*56,i===G.pauseSel));
+    ['Riprendi','Ricomincia il livello','Comandi','Trucchi','Torna al menu'].forEach((l,i)=>menuItem(l,cxm,PAUSE_Y+i*PAUSE_STEP,i===G.pauseSel));
+    drawAudioBtn();
     text('Ricominciando o tornando al menu, il livello riparte da capo',cxm,580,20,'#9a8476','center',400);}
   else if(G.state==='help')renderHelp();
   else if(G.state==='clear'){
@@ -91,7 +115,7 @@ function renderMain(){
   }
 }
 function drawToast(){
-  if(padMsgT>0){const a=Math.min(1,padMsgT/20);out.globalAlpha=a;out.fillStyle='rgba(18,8,16,.92)';out.fillRect(440,640,400,56);out.strokeStyle='#e8b84a';out.lineWidth=3;out.strokeRect(441,641,398,54);text('🎮 '+padMsg,640,668,24,'#f3e3c3','center',600);out.globalAlpha=1;}
+  if(padMsgT>0){const a=Math.min(1,padMsgT/20);out.globalAlpha=a;out.fillStyle='rgba(18,8,16,.92)';out.fillRect(440,640,400,56);out.strokeStyle='#e8b84a';out.lineWidth=3;out.strokeRect(441,641,398,54);{const w=textWidth(padMsg,24),iw=36,x0=640-(w+iw)/2;padIcon(x0,658,3,'#e8b84a');text(padMsg,x0+iw+8,668,24,'#f3e3c3','left',600);}out.globalAlpha=1;}
   if(!toasts.length)return;const T0=toasts[0],a=ACH.find(x=>x.id===T0.id);if(!a)return;
   const slide=Math.min(1,T0.t/14,(210-T0.t)/14),y=Math.round(-110+130*slide);
   out.fillStyle='rgba(18,8,16,.95)';out.fillRect(390,y,500,96);out.strokeStyle='#e8b84a';out.lineWidth=4;out.strokeRect(392,y+2,496,92);
@@ -148,9 +172,10 @@ function renderMenus(){
     text('BARUX',tx,200,150,'#f3e3c3','center',700);
     text('e la maledizione di Anlaucer',tx,300,34,'#d8b8a8','center',400);
     const items=titleItems();
-    out.fillStyle='rgba(12,4,10,.72)';out.fillRect(tx-250,TITLE_Y-38,500,items.length*50+70);
-    items.forEach((it,i)=>menuItem(it.label,tx,TITLE_Y+i*50,i===G.menuSel));
-    text('INVIO per scegliere · frecce per spostarti',tx,TITLE_Y+items.length*50+8,20,'#9a8476','center',400);
+    out.fillStyle='rgba(12,4,10,.72)';out.fillRect(tx-250,TITLE_Y-38,500,items.length*TITLE_STEP+70);
+    items.forEach((it,i)=>menuItem(it.label,tx,TITLE_Y+i*TITLE_STEP,i===G.menuSel));
+    text('INVIO per scegliere · frecce per spostarti',tx,TITLE_Y+items.length*TITLE_STEP+6,20,'#9a8476','center',400);
+    drawAudioBtn();
     return;
   }
   menuBG(.72);backBtn();
