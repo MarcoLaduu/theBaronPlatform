@@ -68,15 +68,25 @@ Il progetto usa [Vite](https://vitejs.dev/) come server di sviluppo e per la bui
 
 ```
 barone-barux/
-├── index.html                 ← pagina del gioco (canvas e comandi touch)
+├── index.html
 ├── src/
-│   ├── main.js                ← logica, grafica, livelli, musica
-│   ├── style.css              ← stile della pagina
-│   └── assets/
-│       └── danno_barone.mp3   ← suono del danno
-├── public/
-│   └── favicon.svg
-├── docs/                  ← versione compilata, pubblicata da GitHub Pages
+│   ├── main.js              ← punto di ingresso
+│   ├── config.js            ← costanti (risoluzione, tile)
+│   ├── state.js             ← stato condiviso della partita
+│   ├── canvas.js · utils.js · input.js · save.js
+│   ├── core/                ← ciclo di gioco, particelle
+│   ├── entities/            ← giocatore, scagnozzi, boss, proiettili
+│   ├── world/               ← ambientazioni, generatore dei livelli, collisioni
+│   ├── graphics/            ← sprite e icone
+│   ├── render/              ← disegno del mondo, HUD e schermate
+│   ├── data/                ← obiettivi e galleria dei personaggi
+│   ├── ui/                  ← posizioni degli elementi nei menu
+│   ├── audio/               ← musica ed effetti sonori
+│   ├── assets/danno_barone.mp3
+│   └── style.css
+├── public/                  ← favicon e .nojekyll
+├── scripts/deploy.js        ← build + commit + push
+├── docs/                    ← versione compilata, pubblicata da GitHub Pages
 ├── vite.config.js
 └── package.json
 ```
