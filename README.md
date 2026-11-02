@@ -76,7 +76,7 @@ barone-barux/
 │       └── danno_barone.mp3   ← suono del danno
 ├── public/
 │   └── favicon.svg
-├── .github/workflows/deploy.yml  ← pubblicazione automatica su GitHub Pages
+├── docs/                  ← versione compilata, pubblicata da GitHub Pages
 ├── vite.config.js
 └── package.json
 ```
@@ -92,17 +92,19 @@ Serve [Node.js](https://nodejs.org/) 18 o superiore.
 ```bash
 npm install       # installa Vite (solo la prima volta)
 npm run dev       # avvia il gioco in locale con ricarica automatica
-npm run build     # crea la versione da pubblicare nella cartella dist/
-npm run preview   # prova in locale la versione di dist/
+npm run build     # crea la versione da pubblicare nella cartella docs/
+npm run preview   # prova in locale la versione di docs/
 ```
 
 ## Pubblicazione su GitHub Pages
 
-La pubblicazione è automatica grazie a GitHub Actions:
+La build viene generata nella cartella `docs/`, che GitHub Pages pubblica direttamente:
 
-1. Carica il progetto nel repository (la cartella `node_modules` e `dist` sono già escluse da `.gitignore`).
-2. Nel repository apri **Settings → Pages** e in **Source** scegli **GitHub Actions**.
-3. A ogni push sul branch `main` il gioco viene compilato e pubblicato in un paio di minuti. Puoi seguire l'avanzamento nella scheda **Actions**.
+1. Lancia `npm run build`.
+2. Fai commit e push del progetto, **inclusa la cartella `docs/`**.
+3. La prima volta, nel repository apri **Settings → Pages** e imposta **Deploy from a branch** → branch **main** → cartella **/docs**.
+
+Ogni volta che modifichi il gioco, rilancia `npm run build` e fai push: il sito si aggiorna in circa un minuto.
 
 ## Crediti
 
