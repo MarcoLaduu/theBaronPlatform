@@ -9,7 +9,7 @@ import { BOSS_DEF } from '../graphics/bosses.js';
 import { padMsg, padMsgT } from '../input.js';
 import { backBtn, band, drawFit, menuBG, menuItem, panel, text, wrap } from './draw.js';
 import { drawHUD, drawWorld, hudText } from './world.js';
-import { CHEATS, CHEAT_LIST, SEEN, loadSave } from '../save.js';
+import { CHEATS, CHEAT_LIST, devUnlock, isSeen, loadSave } from '../save.js';
 import { G } from '../state.js';
 import { G_COLS, PAUSE_Y, TITLE_Y, aRect, cheatRect, galRect, levelRect } from '../ui/layout.js';
 import { clamp } from '../utils.js';
@@ -72,16 +72,16 @@ function drawToast(){
   text(a.n,492,y+64,28,'#f3e3c3','left',700);
 }
 function renderAch(){
-  const got=ACH.filter(a=>AST.u[a.id]).length;
+  const got=ACH.filter(a=>AST.u[a.id]||devUnlock()).length;
   text('OBIETTIVI',640,60,44,'#e8b84a','center',700);
-  ACH.forEach((a,i)=>{const r=aRect(i),open=!!AST.u[a.id],sel=i===G.selA;
+  ACH.forEach((a,i)=>{const r=aRect(i),open=!!AST.u[a.id]||devUnlock(),sel=i===G.selA;
     out.fillStyle=sel?'rgba(92,22,38,.95)':(open?'rgba(60,30,20,.9)':'rgba(18,8,16,.85)');out.fillRect(r.x,r.y,r.w,r.h);
     out.strokeStyle=sel?'#e8b84a':(open?'#a8781e':'#3a1a26');out.lineWidth=sel?5:3;out.strokeRect(r.x+2,r.y+2,r.w-4,r.h-4);
     if(!open&&a.secret)text('?',r.x+r.w/2,r.y+r.h/2,44,'#5a4050','center',700);
     else drawFit(a.ic(),r.x+14,r.y+14,r.w-28,r.h-28,!open);});
   text('Sbloccati: '+got+' / '+ACH.length,355,540,22,'#9a8476','center',400);
   if(cheatsOn())text('Trucchi attivi: gli obiettivi sono in pausa',355,578,19,'#e8b84a','center',400);
-  const a=ACH[G.selA],open=!!AST.u[a.id],hidden=a.secret&&!open;
+  const a=ACH[G.selA],open=!!AST.u[a.id]||devUnlock(),hidden=a.secret&&!open;
   panel(680,130,550,540);
   if(hidden)text('?',955,250,120,'#5a4050','center',700);else drawFit(a.ic(),700,150,510,200,!open);
   text(hidden?'???':a.n,705,395,32,open?'#f3e3c3':'#b8a898','left',700);
@@ -90,7 +90,7 @@ function renderAch(){
   if(a.stat&&!hidden&&a.goal>1){const v=Math.min(a.goal,AST.s[a.stat]||0);
     out.fillStyle='#2a1420';out.fillRect(705,570,500,18);out.fillStyle=open?'#2fb06a':'#e8b84a';out.fillRect(705,570,Math.round(500*v/a.goal),18);
     text(v+' / '+a.goal,1205,605,20,'#b8a898','right',400);}
-  text(open?'Sbloccato il '+new Date(AST.u[a.id]).toLocaleDateString('it-IT'):'Da sbloccare',705,640,20,open?'#2fb06a':'#8a7a7a','left',600);
+  text(open?(AST.u[a.id]?'Sbloccato il '+new Date(AST.u[a.id]).toLocaleDateString('it-IT'):'Sbloccato (modalità sviluppo)'):'Da sbloccare',705,640,20,open?'#2fb06a':'#8a7a7a','left',600);
   text('Frecce per sfogliare · ESC per tornare',640,700,18,'#9a8476','center',400);
 }
 function renderCheats(){
@@ -104,11 +104,11 @@ function renderCheats(){
     out.fillStyle=on?'#2fb06a':'#3a2a30';out.fillRect(tx,ty,110,44);
     out.fillStyle=on?'#a8f0c0':'#6a5a60';out.fillRect(on?tx+70:tx+6,ty+6,34,32);
     text(on?'ON':'OFF',on?tx+36:tx+74,ty+22,20,on?'#0a2a14':'#b8a898','center',700);});
-  const r=cheatRect(3),sel=G.cheatSel===3;
+  const r=cheatRect(CHEAT_LIST.length),sel=G.cheatSel===CHEAT_LIST.length;
   out.fillStyle=sel?'rgba(92,22,38,.92)':'rgba(18,8,16,.88)';out.fillRect(r.x,r.y,r.w,r.h);
   out.strokeStyle=sel?'#e8b84a':'#3a1a26';out.lineWidth=sel?5:3;out.strokeRect(r.x+2,r.y+2,r.w-4,r.h-4);
   text('Fatto',r.x+r.w/2,r.y+r.h/2,30,'#f3e3c3','center',700);
-  text('INVIO per attivare o disattivare · ESC per uscire',640,640,20,'#9a8476','center',400);
+  text('INVIO per attivare o disattivare · ESC per uscire',640,700,20,'#9a8476','center',400);
 }
 function renderMenus(){
   if(G.state==='title'){
@@ -137,7 +137,7 @@ function renderMenus(){
       out.strokeStyle=sel?'#e8b84a':'#3a1a26';out.lineWidth=sel?6:4;out.strokeRect(r.x+2,r.y+2,r.w-4,r.h-4);
       text('LIVELLO '+(i+1),r.x+r.w/2,r.y+38,22,open?'#e8b84a':'#6a5a5a','center',600);
       if(open){text(THEMES[i].name,r.x+r.w/2,r.y+90,25,'#f3e3c3','center',700);
-        text(SEEN.has('boss'+i)?'Boss: '+BOSS_DEF[i].name:'Boss: ???',r.x+r.w/2,r.y+135,17,'#d8b8a8','center',400);}
+        text(isSeen('boss'+i)?'Boss: '+BOSS_DEF[i].name:'Boss: ???',r.x+r.w/2,r.y+135,17,'#d8b8a8','center',400);}
       else{out.fillStyle='#6a5a5a';out.fillRect(r.x+r.w/2-18,r.y+100,36,28);out.strokeStyle='#6a5a5a';out.lineWidth=6;out.beginPath();out.arc(r.x+r.w/2,r.y+100,12,Math.PI,0);out.stroke();
         text('Bloccato',r.x+r.w/2,r.y+155,22,'#8a7a7a','center',400);}
     }
@@ -147,13 +147,13 @@ function renderMenus(){
   if(G.state==='ach'){renderAch();return;}
   // galleria
   text('PERSONAGGI',640,60,44,'#e8b84a','center',700);
-  ROSTER.forEach((r,i)=>{const g=galRect(i),open=r.id==='barux'||SEEN.has(r.id),sel=i===G.selG;
+  ROSTER.forEach((r,i)=>{const g=galRect(i),open=r.id==='barux'||isSeen(r.id),sel=i===G.selG;
     out.fillStyle=sel?'rgba(92,22,38,.95)':'rgba(18,8,16,.85)';out.fillRect(g.x,g.y,g.w,g.h);
     out.strokeStyle=sel?'#e8b84a':(r.boss!=null?'#7a3a20':'#3a1a26');out.lineWidth=sel?5:3;out.strokeRect(g.x+2,g.y+2,g.w-4,g.h-4);
     drawFit(r.img(),g.x+10,g.y+10,g.w-20,g.h-20,!open);});
-  const found=ROSTER.filter(r=>r.id==='barux'||SEEN.has(r.id)).length;
+  const found=ROSTER.filter(r=>r.id==='barux'||isSeen(r.id)).length;
   text('Scoperti: '+found+' / '+ROSTER.length,50+(G_COLS*102-10)/2,580,22,'#9a8476','center',400);
-  const r=ROSTER[G.selG],open=r.id==='barux'||SEEN.has(r.id);
+  const r=ROSTER[G.selG],open=r.id==='barux'||isSeen(r.id);
   panel(600,130,630,540);
   drawFit(r.img(),630,150,570,250,!open);
   if(open){

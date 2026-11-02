@@ -6,7 +6,7 @@ import { BOSS_DEF, BOSS_SPR } from '../graphics/bosses.js';
 import { KINDS } from '../graphics/enemies.js';
 import { COIN, HEART, HEART_E } from '../graphics/items.js';
 import { band, text, triFill } from './draw.js';
-import { CHEATS } from '../save.js';
+import { CHEATS, devUnlock } from '../save.js';
 import { G, cam } from '../state.js';
 import { BGS, LH, LW, THEMES } from '../world/themes.js';
 
@@ -150,7 +150,7 @@ export function drawHUD(){
 }
 export function hudText(){
   text(String(G.coins),16*S+6,20*S,30,'#f3e3c3','left');
-  if(CHEATS.lives||CHEATS.god||CHEATS.kill)text('TRUCCHI ATTIVI',6*S,30*S,18,'#e8b84a','left',600);
+  if(CHEATS.lives||CHEATS.god||CHEATS.kill||devUnlock())text('TRUCCHI ATTIVI',6*S,30*S,18,'#e8b84a','left',600);
   text('×'+Math.max(0,G.lives),(W-28)*S,10*S,30,'#f3e3c3','left');
   if(G.boss&&G.fight){const d=BOSS_DEF[G.boss.i];text(d.name,W*S/2,(H-17)*S,28,'#f3e3c3');
     if(G.boss.intro>0){const a=Math.min(1,G.boss.intro/20,(120-G.boss.intro)/20);out.globalAlpha=a;band(150,170);text(d.sub.toUpperCase(),W*S/2,195,26,'#e8b84a');text(d.name,W*S/2,262,64,'#f3e3c3','center',700);out.globalAlpha=1;}}

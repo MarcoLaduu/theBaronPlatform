@@ -6,7 +6,7 @@ import { BOSS_SPR } from '../graphics/bosses.js';
 import { KINDS } from '../graphics/enemies.js';
 import { ICON } from '../graphics/icons.js';
 import { COIN, HEART } from '../graphics/items.js';
-import { CHEATS, SEEN } from '../save.js';
+import { CHEATS, SEEN, devUnlock } from '../save.js';
 
 export const ACH=[
  {id:'b0',n:'Rivoluzione monetaria',d:'Sconfiggi Pushing l’Esattore',c:'Storia',ic:()=>BOSS_SPR[0].r},
@@ -37,7 +37,7 @@ export const ACH=[
 export const AST={u:{},s:{}};
 try{const o=JSON.parse(localStorage.getItem('baruxAch')||'{}');Object.assign(AST.u,o.u||{});Object.assign(AST.s,o.s||{});}catch(e){}
 function saveAch(){try{localStorage.setItem('baruxAch',JSON.stringify(AST));}catch(e){}}
-export const cheatsOn=()=>CHEATS.lives||CHEATS.god||CHEATS.kill;
+export const cheatsOn=()=>CHEATS.lives||CHEATS.god||CHEATS.kill||devUnlock();
 export const toasts=[];
 export function unlock(id){if(cheatsOn()||AST.u[id])return;AST.u[id]=Date.now();saveAch();toasts.push({id,t:0});sfx('life');}
 export function stat(k,n=1){if(cheatsOn())return;AST.s[k]=(AST.s[k]||0)+n;saveAch();for(const a of ACH)if(a.stat===k&&AST.s[k]>=a.goal)unlock(a.id);}

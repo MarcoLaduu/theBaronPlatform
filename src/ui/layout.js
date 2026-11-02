@@ -2,7 +2,9 @@
 import { tapPos } from '../input.js';
 
 export function aRect(i){return {x:50+(i%7)*88,y:150+(i/7|0)*88,w:82,h:82};}
-export function cheatRect(i){return i<3?{x:240,y:160+i*112,w:800,h:96}:{x:490,y:500,w:300,h:64};}
+import { CHEAT_LIST } from '../save.js';
+// Le righe dei trucchi sono CHEAT_LIST.length; l'ultima voce è il pulsante "Fatto".
+export function cheatRect(i){const n=CHEAT_LIST.length;return i<n?{x:240,y:140+i*104,w:800,h:92}:{x:490,y:150+n*104,w:300,h:60};}
 export const TITLE_Y=378,PAUSE_Y=300,G_COLS=5;
 export const inRect=(p,r)=>p.x>=r.x&&p.x<=r.x+r.w&&p.y>=r.y&&p.y<=r.y+r.h;
 export const backHit=()=>tapPos&&inRect(tapPos,{x:30,y:30,w:230,h:60});

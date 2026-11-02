@@ -104,14 +104,15 @@ function step(){
     if(hit.tap&&tapPos){if(backHit()){G.state='title';break;}for(let i=0;i<n;i++)if(inRect(tapPos,aRect(i)))G.selA=i;}
     break;}
   case 'cheats':{if(G.cheatsFrom==='title')G.titleX+=.4;
-    if(hit.down)G.cheatSel=(G.cheatSel+1)%4;if(hit.up)G.cheatSel=(G.cheatSel+3)%4;
+    const nc=CHEAT_LIST.length,nr=nc+1;
+    if(hit.down)G.cheatSel=(G.cheatSel+1)%nr;if(hit.up)G.cheatSel=(G.cheatSel+nr-1)%nr;
     let act=-1;
-    if(hit.pause)act=3;
-    else if(hit.tap&&tapPos){if(backHit())act=3;else for(let i=0;i<4;i++)if(inRect(tapPos,cheatRect(i))){G.cheatSel=i;act=i;}}
+    if(hit.pause)act=nc;
+    else if(hit.tap&&tapPos){if(backHit())act=nc;else for(let i=0;i<nr;i++)if(inRect(tapPos,cheatRect(i))){G.cheatSel=i;act=i;}}
     else if(menuOK())act=G.cheatSel;
-    if(act>=0&&act<3){const k=CHEAT_LIST[act].k;CHEATS[k]=!CHEATS[k];saveCheats();sfx(CHEATS[k]?'flag':'kill');
+    if(act>=0&&act<nc){const k=CHEAT_LIST[act].k;CHEATS[k]=!CHEATS[k];saveCheats();sfx(CHEATS[k]?'flag':'kill');
       if(k==='lives'&&CHEATS.lives&&G.cheatsFrom==='pause')G.lives=Math.max(G.lives,99);}
-    if(act===3)G.state=G.cheatsFrom;
+    if(act===nc)G.state=G.cheatsFrom;
     break;}
   case 'intro':G.stT++;camera0();if(confirmHit()){if(G.stT<INTRO.length*45)G.stT=INTRO.length*45;else{G.state='card';G.stT=0;}}break;
   case 'card':G.stT++;updateParts();camera();if((G.stT>30&&confirmHit())||G.stT>170){G.state='play';G.stT=0;}break;

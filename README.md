@@ -52,6 +52,7 @@ Ogni livello ha due checkpoint, piattaforme mobili, fosse, spuntoni e scagnozzi 
 - **Galleria dei personaggi**: le schede di Barux, dei boss e dei 12 tipi di scagnozzi si sbloccano quando li sconfiggi
 - **25 obiettivi** divisi in Storia, Abilità, Combattimento, Collezione e Segreti, con notifica in gioco e barre di avanzamento
 - **Menu dei trucchi**: 99 vite, invincibilità e uccisione istantanea. Con i trucchi attivi gli obiettivi sono in pausa.
+  Avviando il gioco in locale con `npm run dev` compare anche **Sblocca tutto**, che rende visibili livelli, personaggi e obiettivi senza toccare i salvataggi veri. Nella versione pubblicata non esiste.
 - **Salvataggio automatico** dei progressi nel browser
 - Funziona su **computer, tablet e telefono**, con comandi touch e **supporto ai controller**
 
