@@ -42,12 +42,13 @@ export function updateBoss(){
     return;
   }
   switch(b.i){
-  case 0:{ // Pushing: cammina, salta, lancia barili
-    b.vx=b.dir*(low?1.1:.7);b.vy=Math.min(b.vy+.35,6);
-    if(b.onGround&&b.t%160===80)b.vy=-5;
+  case 0:{ // Pushing: primo boss, volutamente facile. Cammina piano e lancia una moneta alla volta.
+    b.vx=b.dir*(low?.8:.5);b.vy=Math.min(b.vy+.35,6);
+    if(low&&b.onGround&&b.t%240===120)b.vy=-4.5; // salta solo quando è a metà vita
     moveBody(b);if(b.hitWall)b.dir*=-1;
     b.face=toP;
-    if(b.t%(low?70:100)===0){const n=low?2:1;for(let k=0;k<n;k++)G.projs.push({type:'barrel',coin:true,x:bx-5,y:b.y,w:10,h:10,vx:toP*(1.1+k*.9+Math.random()*.4),vy:-4.5,life:420,rot:0});sfx('throw');}
+    b.throwEvery=low?110:140; // il sacchetto sopra la testa avvisa 30 frame prima del lancio
+    if(b.t%b.throwEvery===0){G.projs.push({type:'barrel',coin:true,x:bx-5,y:b.y,w:10,h:10,vx:toP*(.9+Math.random()*.4),vy:-4.2,life:420,rot:0});sfx('throw');}
     break;}
   case 1:{ // Gankàla: teletrasporto, rovi dal terreno, sfere
     b.y=b.baseY+Math.sin(b.t*.05)*3;

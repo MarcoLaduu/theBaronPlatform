@@ -18,9 +18,12 @@ export function spawnEnt(e){const o=Object.assign({},e,{alive:true,t0:Math.rando
   if(e.t==='heart'){o.w=7;o.h=7;}
   if(e.t==='flag'){o.w=12;o.h=32;o.on=false;}
   return o;}
-function killEnt(e,src){markSeen(e.kind);checkGallery();e.alive=false;stat('kills');if(src==='air')stat('air');if(src==='stomp')stat('stomp');if(!e.summoned)G.levelRun.kills++;sfx('kill');puff(e.x+e.w/2,e.y+e.h/2,KINDS[e.kind].col,10,2);puff(e.x+e.w/2,e.y+e.h/2,'#ffffff',4,1);}
+// Probabilità che uno scagnozzo sconfitto lasci una vita extra.
+export const LIFE_DROP_CHANCE=.02;
+function gainLife(){G.lives++;G.oneUpT=70;sfx('life');}
+function killEnt(e,src){if(Math.random()<LIFE_DROP_CHANCE)gainLife();markSeen(e.kind);checkGallery();e.alive=false;stat('kills');if(src==='air')stat('air');if(src==='stomp')stat('stomp');if(!e.summoned)G.levelRun.kills++;sfx('kill');puff(e.x+e.w/2,e.y+e.h/2,KINDS[e.kind].col,10,2);puff(e.x+e.w/2,e.y+e.h/2,'#ffffff',4,1);}
 function hitEnemy(e,fromX,src){e.hp=CHEATS.kill?0:e.hp-1;e.hurtT=20;if(e.hp<=0)killEnt(e,src);else{sfx('bossHit');puff(e.x+e.w/2,e.y+e.h/2,'#ffffff',5,1.4);if(!KINDS[e.kind].fly){e.vx=(e.x+e.w/2<fromX?-1:1)*2;e.vy=-2;}}}
-function addCoin(){G.coins++;stat('coins');G.levelRun.coins++;sfx('coin');if(G.coins%100===0){G.lives++;sfx('life');}}
+function addCoin(){G.coins++;stat('coins');G.levelRun.coins++;sfx('coin');if(G.coins%100===0)gainLife();}
 function edgeAhead(e){const fx=e.dir>0?e.x+e.w+1:e.x-1;return !solidAt(fx,e.y+e.h+2)&&!onewayAt(fx,e.y+e.h+2);}
 export function updateMP(e){e.t0++;const ox=e.x;e.x=e.x0+(Math.sin(e.t0*e.sp)*.5+.5)*(e.x1-e.x0);if(G.P.ride===e)G.P.x+=e.x-ox;}
 function updateEnemy(e){

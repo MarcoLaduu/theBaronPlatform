@@ -97,7 +97,7 @@ export function drawWorld(){
     if(b.i===3&&b.st!=='dying'){const lx=b.face>0?b.x+b.w-cx:b.x-16-cx,ly=b.y+14-cy;
       if(b.st!=='stun'){px(lx,ly+1,16,2,'#c8ccd8');px(b.face>0?lx+14:lx,ly,2,4,'#ffffff');px(b.face>0?lx:lx+12,ly-1,4,6,'#7a8090');}
       else for(let i=0;i<3;i++){const a=G.frame*.15+i*2.1;px(b.x+b.w/2-cx+Math.cos(a)*10,b.y-6-cy+Math.sin(a)*3,2,2,'#ffe040');}}
-    if(b.i===0&&b.st!=='dying'&&b.t%100>85){drawSack(b.x+b.w/2-6-cx,b.y-12-cy);}
+    if(b.i===0&&b.st!=='dying'&&b.throwEvery&&b.t%b.throwEvery>b.throwEvery-30){drawSack(b.x+b.w/2-6-cx,b.y-12-cy);}
   }
   // proiettili
   for(const q of G.projs){const x=Math.round(q.x-cx),y=Math.round(q.y-cy);
@@ -111,6 +111,13 @@ export function drawWorld(){
       else{const hg=Math.min(28,(q.ph-q.warn)*4),base=floorY-cy;for(let i=0;i<3;i++){ctx.fillStyle='#1a3a0a';for(let j=0;j<hg;j++){const w=Math.max(0,Math.round(2*(j/hg)));ctx.fillRect(x+2+i*4-w,base-hg+j,w*2+1,1);}}px(x+3,base-hg+4,1,hg-4,'#4a8a2a');px(x+7,base-hg+2,1,hg-2,'#6ab02a');}}
   }
   drawPlayer(cx,cy);
+  if(G.oneUpT>0){ // testa del Barone + "+1" che sale quando guadagna una vita
+    const t=70-G.oneUpT,x=Math.round(G.P.x+G.P.w/2-15-cx),y=Math.round(G.P.y-24-cy-Math.min(t,24)*.5);
+    if(G.oneUpT>18||(G.oneUpT>>1)%2){
+      ctx.drawImage(BAR.idle[0],0,0,16,15,x,y,16,15);
+      const glyph=(cells,ox,oy)=>{for(const [a,b] of cells)px(ox+a-1,oy+b-1,3,3,'#1a1020');for(const [a,b] of cells)px(ox+a,oy+b,1,1,b<2?'#fff2b0':'#e8b84a');};
+      glyph([[2,0],[2,1],[0,2],[1,2],[2,2],[3,2],[4,2],[2,3],[2,4]],x+18,y+6);
+      glyph([[1,0],[0,1],[1,1],[1,2],[1,3],[0,4],[1,4],[2,4]],x+25,y+6);}}
   for(const p of G.parts)px(p.x-cx,p.y-cy,p.life>12?2:1,p.life>12?2:1,p.col);
 }
 function drawBigCoin(x,y){const w=[10,7,3,7][(G.frame>>2)%4],o=(10-w)/2;px(x+o,y,w,10,'#6a0a10');px(x+o+1,y+1,Math.max(1,w-2),8,'#f0c040');if(w>4){px(x+o+2,y+2,w-4,6,'#c8901a');px(x+4,y+3,2,4,'#fff2b0');}}

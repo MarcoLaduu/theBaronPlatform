@@ -2,7 +2,7 @@
 import { flip, sprite, white } from '../utils.js';
 
 export const BOSS_DEF=[
- {name:'Pushing l’Esattore',sub:'Primo scagnozzo di Anlaucer',fem:false,hp:6,w:28,h:28,
+ {name:'Pushing l’Esattore',sub:'Primo scagnozzo di Anlaucer',fem:false,hp:4,w:28,h:28,
   pal:{k:'#140a0c',g:'#6ab040',G:'#3e7a2a',y:'#ffe040',r:'#c8303a',b:'#7a4a24',w:'#f4f0e0'},
   map:["................",".....kkkkkk.....","....krrrrrrk....",".k..krrrrrrk..k.","kgk.kggggggk.kgk",".kgkgyggggygkgk.","..kggkggggkggk..","...kggwwwwggk...","....kggggggk....","...kbbbbbbbbk...","..kgbbGbbGbbgk..","..kgbbbbbbbbgk..","...kbbbbbbbbk...","....kgk..kgk....","....kgk..kgk....","...kkkk..kkkk..."]},
  {name:'Gankàla la Strega dei Rovi',sub:'Secondo scagnozzo di Anlaucer',fem:true,hp:7,w:26,h:28,

@@ -10,7 +10,7 @@ import { die, hurt, newPlayer, respawn, updatePlayer } from '../entities/player.
 import { updateProjs } from '../entities/projectiles.js';
 import { confirmHit, hit, menuOK, pollPad, tapPos, tickPad } from '../input.js';
 import { INTRO, render } from '../render/screens.js';
-import { CHEATS, CHEAT_LIST, loadSave, markSeen, save, saveCheats, startLives } from '../save.js';
+import { CHEATS, CHEAT_LIST, helpSeen, loadSave, markHelpSeen, markSeen, save, saveCheats, startLives } from '../save.js';
 import { G, cam } from '../state.js';
 import { G_COLS, PAUSE_Y, TITLE_Y, aRect, backHit, cheatRect, galRect, inRect, levelRect } from '../ui/layout.js';
 import { clamp, overlap } from '../utils.js';
@@ -53,6 +53,7 @@ function levelClear(){markSeen('boss'+G.lvlIndex);
 
 function updatePlay(){
   G.levelRun.frames++;
+  if(G.oneUpT>0)G.oneUpT--;
   if(hit.pause){G.state='pause';G.pauseSel=0;return;}
   for(const m of G.ents)if(m.t==='mp')updateMP(m);
   updatePlayer();
@@ -115,18 +116,22 @@ function step(){
     if(act===nc)G.state=G.cheatsFrom;
     break;}
   case 'intro':G.stT++;camera0();if(confirmHit()){if(G.stT<INTRO.length*45)G.stT=INTRO.length*45;else{G.state='card';G.stT=0;}}break;
-  case 'card':G.stT++;updateParts();camera();if((G.stT>30&&confirmHit())||G.stT>170){G.state='play';G.stT=0;}break;
+  case 'card':G.stT++;updateParts();camera();if((G.stT>30&&confirmHit())||G.stT>170){G.stT=0;
+    // la prima volta che si gioca il livello 1 compare la finestra con i comandi
+    if(G.lvlIndex===0&&!helpSeen()){G.state='help';G.helpFrom='play';}else G.state='play';}break;
+  case 'help':G.stT++;if(G.stT>20&&(menuOK()||hit.tap||hit.pause)){markHelpSeen();G.state=G.helpFrom;G.stT=0;}break;
   case 'play':updatePlay();break;
   case 'pause':{
-    if(hit.down)G.pauseSel=(G.pauseSel+1)%4;if(hit.up)G.pauseSel=(G.pauseSel+3)%4;
+    if(hit.down)G.pauseSel=(G.pauseSel+1)%5;if(hit.up)G.pauseSel=(G.pauseSel+4)%5;
     if(hit.pause){G.state='play';break;}
     let act=-1;
-    if(hit.tap&&tapPos){for(let i=0;i<4;i++)if(Math.abs(tapPos.y-(PAUSE_Y+i*62))<28&&Math.abs(tapPos.x-640)<240)act=i;}
+    if(hit.tap&&tapPos){for(let i=0;i<5;i++)if(Math.abs(tapPos.y-(PAUSE_Y+i*56))<28&&Math.abs(tapPos.x-640)<240)act=i;}
     else if(menuOK())act=G.pauseSel;
     if(act===0)G.state='play';
     else if(act===1){G.coins=G.levelStartCoins;loadLevel(G.lvlIndex);G.state='card';G.stT=0;music(THEMES[G.lvlIndex].song);}
-    else if(act===2){G.cheatsFrom='pause';G.cheatSel=0;G.state='cheats';}
-    else if(act===3){G.coins=G.levelStartCoins;G.state='title';G.menuSel=0;music(0);}
+    else if(act===2){G.helpFrom='pause';G.stT=0;G.state='help';}
+    else if(act===3){G.cheatsFrom='pause';G.cheatSel=0;G.state='cheats';}
+    else if(act===4){G.coins=G.levelStartCoins;G.state='title';G.menuSel=0;music(0);}
     break;}
   case 'dead':G.stT++;G.P.vy+=.3;G.P.y+=G.P.vy;updateParts();if(G.stT>100)respawn();break;
   case 'clear':G.stT++;updateParts();if(G.stT>50&&confirmHit()){if(G.lvlIndex>=5){G.state='win';G.stT=0;music(0);}else{loadLevel(G.lvlIndex+1);G.state='card';G.stT=0;music(THEMES[G.lvlIndex].song);}}break;

@@ -11,6 +11,8 @@ export function save(n){try{if(n>realSave())localStorage.setItem('baruxLvl',Stri
 export const CHEATS={lives:false,god:false,kill:false};
 try{Object.assign(CHEATS,JSON.parse(localStorage.getItem('baruxCheats')||'{}'));}catch(e){}
 export function saveCheats(){try{localStorage.setItem('baruxCheats',JSON.stringify(CHEATS));}catch(e){}}
+export function helpSeen(){try{return localStorage.getItem('baruxHelpSeen')==='1';}catch(e){return false;}}
+export function markHelpSeen(){try{localStorage.setItem('baruxHelpSeen','1');}catch(e){}}
 export const isSeen=id=>devUnlock()||SEEN.has(id);
 export const startLives=()=>CHEATS.lives?99:3;
 export const CHEAT_LIST=[

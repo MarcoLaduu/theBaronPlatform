@@ -24,6 +24,33 @@ export const INTRO=[
  'Riprenditi il regno, Barone. A colpi di bastone.'
 ];
 export function render(){renderMain();drawToast();}
+// ---------- finestra dei comandi ----------
+const HELP_ROWS=[
+ ['Muoversi','← →  oppure  A D','Croce o levetta','◀ ▶'],
+ ['Saltare','Spazio, ↑, W o Z','A / ✕','A'],
+ ['Bastonata','X, J o K','X, B, Y / □ ○ △','B'],
+ ['Pausa','P o Esc','Start / Options','II']];
+const HELP_TIPS=[
+ 'Tieni premuto il salto per saltare più in alto.',
+ 'Bastonata a terra: colpisce davanti al Barone.',
+ 'Bastonata in volo: una mezzaluna che colpisce sopra, davanti e sotto.',
+ 'Salta in testa ai nemici per schiacciarli, ma non sui rovi con le spine!',
+ 'Il bastone distrugge anche monete, sfere e palle di fuoco nemiche.',
+ 'Bandiere = checkpoint · Cuori = salute · Ogni 100 monete, una vita extra.'];
+function renderHelp(){
+  out.fillStyle='rgba(10,4,8,.82)';out.fillRect(0,0,W*S,H*S);
+  panel(70,30,1140,660);
+  text('COME SI GIOCA',640,85,44,'#e8b84a','center',700);
+  const touch=document.body.classList.contains('is-touch');
+  const cols=touch?[120,360,680,990]:[140,460,830];
+  const heads=['Azione','Tastiera','Controller'].concat(touch?['Touch']:[]);
+  heads.forEach((h,i)=>text(h.toUpperCase(),cols[i],148,18,'#9a8476','left',600));
+  out.fillStyle='#5c1626';out.fillRect(110,168,1060,3);
+  HELP_ROWS.forEach((r,j)=>{const y=200+j*46;r.slice(0,heads.length).forEach((c,i)=>text(c,cols[i],y,i===0?26:22,i===0?'#f3e3c3':'#d8c8b8','left',i===0?700:400));});
+  out.fillStyle='#5c1626';out.fillRect(110,375,1060,3);
+  HELP_TIPS.forEach((t,j)=>{text('•',130,410+j*38,22,'#e8b84a','left',700);text(t,155,410+j*38,21,'#d8c8b8','left',400);});
+  if(G.stT>20)text(G.helpFrom==='pause'?'Premi INVIO o tocca per tornare alla pausa':'Premi INVIO o tocca per iniziare a giocare',640,655,22,'#e8b84a','center',600);
+}
 function renderMain(){
   if(G.state==='cheats'){
     if(G.cheatsFrom==='title')menuBG(.8);
@@ -43,10 +70,11 @@ function renderMain(){
     const a=Math.min(1,G.stT/15,(170-G.stT)/20);out.globalAlpha=Math.max(0,a);
     band(200,320);text('LIVELLO '+(G.lvlIndex+1),cxm,260,30,'#e8b84a');text(THEMES[G.lvlIndex].name,cxm,340,72,'#f3e3c3','center',700);
     text('Sconfiggi '+BOSS_DEF[G.lvlIndex].name,cxm,430,30,'#d8b8a8');out.globalAlpha=1;
-  } else if(G.state==='pause'){out.fillStyle='rgba(10,4,8,.6)';out.fillRect(0,0,W*S,H*S);band(140,460);
+  } else if(G.state==='pause'){out.fillStyle='rgba(10,4,8,.6)';out.fillRect(0,0,W*S,H*S);band(140,470);
     text('PAUSA',cxm,208,64,'#f3e3c3','center',700);
-    ['Riprendi','Ricomincia il livello','Trucchi','Torna al menu'].forEach((l,i)=>menuItem(l,cxm,PAUSE_Y+i*62,i===G.pauseSel));
-    text('Ricominciando o tornando al menu, il livello riparte da capo',cxm,560,20,'#9a8476','center',400);}
+    ['Riprendi','Ricomincia il livello','Comandi','Trucchi','Torna al menu'].forEach((l,i)=>menuItem(l,cxm,PAUSE_Y+i*56,i===G.pauseSel));
+    text('Ricominciando o tornando al menu, il livello riparte da capo',cxm,580,20,'#9a8476','center',400);}
+  else if(G.state==='help')renderHelp();
   else if(G.state==='clear'){
     const d=BOSS_DEF[G.lvlIndex];band(170,380);
     text(d.name,cxm,250,52,'#f3e3c3','center',700);
