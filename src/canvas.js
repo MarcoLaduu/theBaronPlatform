@@ -9,7 +9,8 @@ export const out=scr.getContext('2d'); out.imageSmoothingEnabled=false;
 // così testi e grafica restano nitidi a qualsiasi dimensione della finestra.
 function fitResolution(){
   const r=scr.getBoundingClientRect(),dpr=window.devicePixelRatio||1;
-  const k=Math.max(1,Math.min(3,Math.ceil(r.width*dpr/(W*S)*2)/2));
+  const maxK=document.body.classList.contains('is-touch')?2:3; // sui telefoni 2x basta ed è più leggero
+  const k=Math.max(1,Math.min(maxK,Math.ceil(r.width*dpr/(W*S)*2)/2));
   if(scr.width!==Math.round(W*S*k)){scr.width=Math.round(W*S*k);scr.height=Math.round(H*S*k);}
   out.setTransform(k,0,0,k,0,0);out.imageSmoothingEnabled=false;
 }

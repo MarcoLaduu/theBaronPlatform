@@ -11,6 +11,7 @@ import { updateProjs } from '../entities/projectiles.js';
 import { confirmHit, hit, menuOK, pollPad, tapPos, tickPad } from '../input.js';
 import { INTRO, render } from '../render/screens.js';
 import { CHEATS, CHEAT_LIST, helpSeen, loadSave, markHelpSeen, markSeen, save, saveCheats, startLives } from '../save.js';
+import { checkOrientation } from '../mobile.js';
 import { G, cam } from '../state.js';
 import { AUDIO_BTN, G_COLS, PAUSE_STEP, PAUSE_Y, TITLE_STEP, TITLE_Y, aRect, backHit, cheatRect, galRect, inRect, levelRect } from '../ui/layout.js';
 import { clamp, overlap } from '../utils.js';
@@ -73,7 +74,7 @@ function updatePlay(){
 // ---------- ciclo ----------
 function step(){
   G.frame++;
-  pollPad();tickPad();
+  pollPad();tickPad();checkOrientation();
   if(toasts.length){toasts[0].t++;if(toasts[0].t>210)toasts.shift();}
   if(G.shake>0){G.shake*=.86;if(G.shake<.4)G.shake=0;}
   switch(G.state){

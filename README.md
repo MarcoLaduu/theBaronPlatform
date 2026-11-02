@@ -57,6 +57,7 @@ Ogni livello ha due checkpoint, piattaforme mobili, fosse, spuntoni e scagnozzi 
   Avviando il gioco in locale con `npm run dev` compare anche **Sblocca tutto**, che rende visibili livelli, personaggi e obiettivi senza toccare i salvataggi veri. Nella versione pubblicata non esiste.
 - **Salvataggio automatico** dei progressi nel browser
 - Funziona su **computer, tablet e telefono**, con comandi touch e **supporto ai controller**
+- Su **telefono e tablet** si gioca in orizzontale: in verticale il gioco va in pausa e chiede di ruotare il dispositivo. Su Android al primo tocco passa a schermo intero e blocca l'orientamento.
 
 ## Salvataggi
 
@@ -74,6 +75,7 @@ barone-barux/
 ├── index.html
 ├── src/
 │   ├── main.js              ← punto di ingresso
+│   ├── mobile.js            ← orientamento orizzontale e schermo intero su telefono
 │   ├── config.js            ← costanti (risoluzione, tile)
 │   ├── state.js             ← stato condiviso della partita
 │   ├── canvas.js · utils.js · input.js · save.js

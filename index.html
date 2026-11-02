@@ -2,7 +2,11 @@
 <html lang="it">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#120a12" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="description" content="Il Barone Barux e la maledizione di Anlaucer: un platform 2D in pixel art giocabile nel browser." />
     <title>Il Barone Barux</title>
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
@@ -20,6 +24,10 @@
         <div class="grp"><button id="tl" data-k="left" aria-label="Sinistra">◀</button><button id="tr" data-k="right" aria-label="Destra">▶</button></div>
         <div class="grp"><button id="tb" data-k="attack" aria-label="Bastonata">B</button><button id="ta" data-k="jump" aria-label="Salta">A</button></div>
       </div>
+    </div>
+    <div class="rotate" id="rotate" role="alert">
+      <div class="phone" aria-hidden="true"></div>
+      <p>Ruota il dispositivo in <b>orizzontale</b> per giocare</p>
     </div>
     <script type="module" src="/src/main.js"></script>
   </body>
