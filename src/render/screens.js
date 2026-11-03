@@ -37,7 +37,7 @@ const HELP_PADS={
   generic:{name:'',            keys:['Croce o levetta sinistra','Pulsante in basso','Altri pulsanti frontali','Start','Pulsante a destra'],ok:'il pulsante in basso'}};
 const HELP_TIPS=[
  'Tieni premuto il salto per saltare più in alto.',
- 'Bastonata a terra: colpisce davanti al Barone.',
+ 'Bastonata a terra: una mezzaluna davanti al Barone, dalla testa ai piedi.',
  'Bastonata in volo: una mezzaluna che colpisce sopra, davanti e sotto.',
  'Salta in testa ai nemici per schiacciarli, ma non sui rovi con le spine!',
  'Il bastone distrugge anche monete, sfere e palle di fuoco nemiche.',

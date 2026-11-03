@@ -58,7 +58,7 @@ function updatePlay(){
   if(hit.pause){G.state='pause';G.pauseSel=0;return;}
   for(const m of G.ents)if(m.t==='mp')updateMP(m);
   updatePlayer();
-  G.atkBox=(G.P.atk>3&&G.P.atk<13)?(G.P.air?{x:G.P.dir>0?G.P.x-2:G.P.x-18,y:G.P.y-8,w:30,h:38}:{x:G.P.dir>0?G.P.x+G.P.w-2:G.P.x-16,y:G.P.y+5,w:18,h:13}):null;
+  G.atkBox=(G.P.atk>3&&G.P.atk<13)?(G.P.air?{x:G.P.dir>0?G.P.x-2:G.P.x-18,y:G.P.y-8,w:30,h:38}:{x:G.P.dir>0?G.P.x+G.P.w-2:G.P.x-16,y:G.P.y-5,w:18,h:24}):null;
   updateEnts();
   if(!G.fight&&!G.portal&&G.P.x>(G.lvl.A+3)*T)startFight();
   if(G.boss)updateBoss();

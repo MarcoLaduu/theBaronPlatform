@@ -1,5 +1,6 @@
 // Sprite e caratteristiche degli scagnozzi.
 import { flip, sprite } from '../utils.js';
+import { MINION_ART } from './minionArt.js';
 
 const IMP_PAL={k:'#14060a',R:'#c42c38',L:'#ff6a5a',D:'#7a1420',y:'#ffd84a',w:'#ffffff'};
 const IMP_A=["..k......k..",".kLk....kDk.",".kLRkkkkRDk.","kLLLRRRRRRDk","kLyyRRRRyyDk","kRykRRRRykDk","kRRRRRRRRDDk",".kRwkwwkwDk.",".kRRRRRRDDk.","..kDDDDDDk.."];
@@ -28,5 +29,7 @@ const KDEF={
  skull:{maps:[["..f..y..f.",".fyf.fyfy."].concat(SK_B),[".f..y..f..","fyf.yfyf.."].concat(SK_B)],pal:{k:'#1a0408',w:'#e8e0d0',W:'#ffffff',n:'#a89a88',r:'#ff5030',f:'#ff6020',y:'#ffd060'},w:9,h:10,ai:'dive',fly:1,hp:1,col:'#ff6020'}
 };
 export const KINDS={};
-for(const k in KDEF){const d=KDEF[k],fr=d.maps.map(m=>sprite(m,d.pal));KINDS[k]=Object.assign({},d,{fr,frL:fr.map(flip)});}
-KINDS.imp={fr:IMP,frL:IMP,w:10,h:12,ai:'walk',spd:.55,hp:1,col:'#c42c38'};
+// i disegni veri sono in minionArt.js (stessa grandezza, più dettagli); le mappe qui sopra dicono quanti fotogrammi ha ognuno
+for(const k in KDEF){const d=KDEF[k],fr=d.maps.map((m,i)=>MINION_ART[k](i));KINDS[k]=Object.assign({},d,{fr,frL:fr.map(flip)});}
+const IMP_L=[MINION_ART.imp(0),MINION_ART.imp(1)]; // disegnato con la coda a destra: guarda a sinistra
+KINDS.imp={fr:IMP_L.map(flip),frL:IMP_L,w:10,h:12,ai:'walk',spd:.55,hp:1,col:'#c42c38'};

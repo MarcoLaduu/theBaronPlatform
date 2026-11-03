@@ -166,21 +166,16 @@ function drawPlayer(cx,cy){
   ctx.drawImage(BAR[f][L?1:0],dx,dy);
   if(G.state==='dead')return;
   const hx=L?dx+2:dx+13;
-  if(p.atk>0&&p.air){
-    const dir=L?-1:1,a0=-1.8,a1=1.8,prog=Math.min(1,(14-p.atk)/9),cur=a0+(a1-a0)*prog,cxp=dx+8,cyp=dy+15,fade=p.atk<5?p.atk/5:1;
-    for(let a=a0;a<=cur;a+=.05){const age=(cur-a)/(a1-a0);if(age>.8)continue;ctx.globalAlpha=(1-age/.8)*fade;
-      const w=1+Math.round(4*Math.cos(a*.85));
-      for(let r=14;r<=14+w;r++){const col=r===14+w?'#ffffff':(r<=15?'#e8b84a':'#fff2b0');px(cxp+dir*Math.cos(a)*r,cyp+Math.sin(a)*r,1,1,col);}}
-    ctx.globalAlpha=1;
-    if(p.atk>4){for(let r=3;r<=13;r++)px(cxp+dir*Math.cos(cur)*r,cyp+Math.sin(cur)*r,1,1,'#4a2a14');px(cxp+dir*Math.cos(cur)*14-1,cyp+Math.sin(cur)*14-1,3,3,'#e8b84a');}
-    return;
-  }
   if(p.atk>0){
-    const ext=p.atk>10?8:14,dir=L?-1:1,hy=dy+18;
-    for(let i=0;i<ext;i++)px(hx+dir*i,hy,1,2,'#4a2a14');
-    px(hx+dir*ext-(L?2:0),hy-1,3,3,'#e8b84a');
-    if(p.atk>6){ctx.globalAlpha=.6;for(let i=0;i<6;i++)px(hx+dir*(8+i*1.5),hy-8+i*2,2,1,'#ffffff');ctx.globalAlpha=1;}
-  } else {px(hx,dy+17,1,7,'#4a2a14');px(hx-1,dy+15,3,2,'#e8b84a');}
+    // mezzaluna: in volo gira tutt'attorno (sopra, davanti, sotto), a terra solo davanti, dall'alto verso i piedi
+    const air=p.air,dir=L?-1:1,a0=air?-1.8:-1.5,a1=air?1.8:1.05,R=air?14:12,prog=Math.min(1,(14-p.atk)/9),cur=a0+(a1-a0)*prog,cxp=dx+8,cyp=dy+(air?15:13),fade=p.atk<5?p.atk/5:1;
+    for(let a=a0;a<=cur;a+=.05){const age=(cur-a)/(a1-a0);if(age>.8)continue;ctx.globalAlpha=(1-age/.8)*fade;
+      const w=1+Math.round((air?4:3)*Math.cos(a*.85));
+      for(let r=R;r<=R+w;r++){const col=r===R+w?'#ffffff':(r<=R+1?'#e8b84a':'#fff2b0');px(cxp+dir*Math.cos(a)*r,cyp+Math.sin(a)*r,1,1,col);}}
+    ctx.globalAlpha=1;
+    if(p.atk>4){for(let r=3;r<=R-1;r++)px(cxp+dir*Math.cos(cur)*r,cyp+Math.sin(cur)*r,1,1,'#4a2a14');px(cxp+dir*Math.cos(cur)*R-1,cyp+Math.sin(cur)*R-1,3,3,'#e8b84a');return;}
+  }
+  px(hx,dy+17,1,7,'#4a2a14');px(hx-1,dy+15,3,2,'#e8b84a');
 }
 export function drawHUD(){
   const n=Math.max(3,G.P.hp);
