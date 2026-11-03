@@ -1,5 +1,6 @@
 // Definizione e sprite dei sei boss.
-import { flip, sprite, white } from '../utils.js';
+import { flip, white } from '../utils.js';
+import { BOSS_ART } from './bossArt.js';
 
 export const BOSS_DEF=[
  {name:'Pushing l’Esattore',sub:'Primo scagnozzo di Anlaucer',fem:false,hp:4,w:28,h:28,
@@ -21,4 +22,5 @@ export const BOSS_DEF=[
   pal:{k:'#0a0204',r:'#b0181c',R:'#e03a2a',y:'#ffd030',W:'#e8e0d0',w:'#ffffff',d:'#2a0a14'},
   map:["kk................kk","kWk..............kWk",".kWk............kWk.",".kWWk..kkkkkk..kWWk.","..kWWkkrrrrrrkkWWk..","...kkrrrrrrrrrrkk...","dd.krrrrrrrrrrrrk.dd","ddkrrryyrrrryyrrrkdd","dddkrrykrrrrkyrrkddd","ddddkrrrrrrrrrrkdddd","dddddkrkwkwkwrkddddd","ddddkkrkkkkkkrkkdddd","dddkrrrrrrrrrrrrkddd","ddkrrRrrrrrrrrRrrkdd","dk.krrrrrrrrrrrrk.kd","d..krrRrrrrrrRrrk..d","....krrrrrrrrrrk....","....krrk....krrk....","...kkrrk....krrkk...","...kkkkk....kkkkk..."]}
 ];
-export const BOSS_SPR=BOSS_DEF.map(d=>{const c=sprite(d.map,d.pal,2);const f=flip(c);return {r:c,l:f,wr:white(c),wl:white(f)};});
+// gli sprite veri sono disegnati a mano in bossArt.js (stesse dimensioni delle mappe qui sopra a pixel doppi)
+export const BOSS_SPR=BOSS_ART.map(art=>{const c=art();const f=flip(c);return {r:c,l:f,wr:white(c),wl:white(f)};});

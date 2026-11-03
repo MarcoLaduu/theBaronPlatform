@@ -3,6 +3,9 @@ import { ctx, out, px } from '../canvas.js';
 import { H, ROWS, S, T, W, floorY } from '../config.js';
 import { BAR } from '../graphics/barux.js';
 import { BOSS_DEF, BOSS_SPR } from '../graphics/bosses.js';
+import { LANCE, REKTER_HEAD_ROWS } from '../graphics/bossArt.js';
+import { flip } from '../utils.js';
+const LANCE_SPR=(()=>{const c=LANCE();return [c,flip(c)];})();
 import { KINDS } from '../graphics/enemies.js';
 import { COIN, HEART, HEART_E } from '../graphics/items.js';
 import { band, text, textWidth, triFill } from './draw.js';
@@ -109,16 +112,15 @@ export function drawWorld(){
     else if(b.i===2&&b.st==='idle'&&b.k<8){ctx.drawImage(img,bx-2,by+4,sw+4,sh-4);}
     else if(b.i===3&&b.phase2){ // corpo senza testa, con fiamme spettrali al posto dell'elmo
       const sx=b.st==='wake'?((G.frame>>1)%2?1:-1)*(b.k<120?1:0):b.st==='aim'?((G.frame>>1)%2?1:-1)*(b.k>20?1:0):0; // trema mentre si riprende
-      ctx.drawImage(img,0,16,sw,sh-16,bx+sx,by+16,sw,sh-16);
-      for(let i=0;i<6;i++){const fx=bx+sx+sw/2-5+i*2,fh=3+((G.frame>>2)+i*3)%5;px(fx,by+17-fh,2,fh,i%2?'#9a6ad8':'#e0d0ff');}}
+      const hr=REKTER_HEAD_ROWS;ctx.drawImage(img,0,hr,sw,sh-hr,bx+sx,by+hr,sw,sh-hr);
+      for(let i=0;i<6;i++){const fx=bx+sx+sw/2-6+i*2,fh=3+((G.frame>>2)+i*3)%5;px(fx,by+hr+1-fh,2,fh,i%2?'#9a6ad8':'#e0d0ff');}}
     else if(b.i===3&&b.st==='aim'){ctx.drawImage(img,bx+((G.frame>>1)%2?1:-1)*(b.k>30?1:0),by);}
     else ctx.drawImage(img,bx,by);
     ctx.globalAlpha=1;
-    if(b.i===3&&b.st!=='dying'){ // lancia puntata in avanti dal braccio
-      if(b.st!=='stun'){const lx=b.face>0?b.x+b.w-cx:b.x-16-cx,ly=b.y+14-cy;
-        px(lx,ly+1,16,2,'#c8ccd8');px(b.face>0?lx+14:lx,ly,2,4,'#ffffff');px(b.face>0?lx:lx+12,ly-1,4,6,'#7a8090');}
+    if(b.i===3&&b.st!=='dying'){ // lancia da torneo stretta nel guanto e puntata in avanti
+      if(b.st!=='stun'){const lc=LANCE_SPR[b.face>0?0:1],lx=b.face>0?b.x+17:b.x+b.w-17-lc.width;ctx.drawImage(lc,Math.round(lx-cx),Math.round(b.y+18-cy));}
       else for(let i=0;i<3;i++){const a=G.frame*.15+i*2.1;px(b.x+b.w/2-cx+Math.cos(a)*10,b.y-6-cy+Math.sin(a)*3,2,2,'#ffe040');}}
-    if(b.helm&&b.helm.alive&&!(b.helm.inv>0&&(b.helm.inv>>1)%2)){const h=b.helm;ctx.drawImage(KINDS.helmet.fr[0],Math.round(h.x-cx),Math.round(h.y-cy),24,18);}
+    if(b.helm&&b.helm.alive&&!(b.helm.inv>0&&(b.helm.inv>>1)%2)){const h=b.helm,hs=G.P.x<h.x+12?sp.l:sp.r;ctx.drawImage(hs,0,0,32,REKTER_HEAD_ROWS,Math.round(h.x-4-cx),Math.round(h.y+2-cy),32,REKTER_HEAD_ROWS);} // l'elmo staccato è lo stesso del boss
     if(b.i===0&&b.st!=='dying'&&b.throwEvery&&b.t%b.throwEvery>b.throwEvery-30){drawSack(b.x+b.w/2-6-cx,b.y-12-cy);}
   }
   // proiettili

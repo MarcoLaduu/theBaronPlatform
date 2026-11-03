@@ -1,6 +1,7 @@
 // Schede della galleria dei personaggi.
 import { BAR } from '../graphics/barux.js';
 import { BOSS_DEF, BOSS_SPR } from '../graphics/bosses.js';
+import { LANCE } from '../graphics/bossArt.js';
 import { KINDS } from '../graphics/enemies.js';
 import { THEMES } from '../world/themes.js';
 import { mk } from '../utils.js';
@@ -9,9 +10,8 @@ import { mk } from '../utils.js';
 let rekterCard=null;
 function rekterImg(){
   if(!rekterCard)rekterCard=mk(54,36,x=>{
-    const f=(a,b,w,h,c)=>{x.fillStyle=c;x.fillRect(a,b,w,h);};
-    x.drawImage(BOSS_SPR[3].r,2,4);
-    f(30,17,22,4,'#1a1c28');f(31,18,20,2,'#c8ccd8');f(50,17,3,4,'#ffffff');f(28,16,4,6,'#7a8090'); // lancia
+    x.drawImage(BOSS_SPR[3].r,2,2);
+    x.drawImage(LANCE(),23,22); // stessa posizione che ha in battaglia rispetto al cavaliere
   });
   return rekterCard;
 }

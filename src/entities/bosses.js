@@ -111,7 +111,7 @@ export function updateBoss(){
       const n=p2?6:4;
       for(let i=0;i<n;i++){const rx=i===0?clamp(px-6,x0+4,x1-16):x0+6+Math.random()*(x1-x0-24);
         G.projs.push({type:'rock',x:Math.round(rx),y:floorY-150,w:12,h:12,vx:0,vy:0,warn:45+i*14,life:600});}}
-    if(b.st!=='stun'&&b.st!=='wake'){const lb={x:b.face>0?b.x+b.w:b.x-16,y:b.y+14,w:16,h:4};if(overlap(G.P,lb))hurt(bx);}
+    if(b.st!=='stun'&&b.st!=='wake'){const lb={x:b.face>0?b.x+b.w:b.x-19,y:b.y+22,w:19,h:5};if(overlap(G.P,lb))hurt(bx);}
     // l'elmo staccato vola sopra l'arena e spara raggi dagli occhi
     const h=b.helm;
     if(h&&h.alive){h.t++;if(h.inv>0)h.inv--;

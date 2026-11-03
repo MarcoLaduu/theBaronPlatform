@@ -31,9 +31,10 @@ function makeTiles(ti){
       if(ti===3){x.fillStyle=C.m;for(let i=0;i<2;i++){let a=R()*16|0,b=R()*16|0;for(let k=0;k<5;k++){x.fillRect(a,b,1,1);a+=R()<.5?1:-1;b++;}}}
     }
   };
-  const fill=mk(16,16,fillFn);
+  const grain=x=>{for(let i=0;i<10;i++){x.fillStyle=R()<.5?C.l:C.d;x.fillRect(R()*16|0,4+(R()*12|0),1,1);}x.fillStyle='rgba(10,4,16,.18)';x.fillRect(0,12,16,4);};
+  const fill=mk(16,16,x=>{fillFn(x);grain(x);x.fillStyle='rgba(10,4,16,.12)';x.fillRect(0,0,16,16);});
   const top=mk(16,16,x=>{
-    fillFn(x);
+    fillFn(x);grain(x);
     if(ti===0){x.fillStyle=C.m;x.fillRect(0,0,16,5);for(let i=0;i<4;i++){x.fillStyle=i%2?C.t:C.t2;x.fillRect(i*4,0,3,4);x.fillStyle=C.l;x.fillRect(i*4,0,2,1);}}
     else if(ti===4){x.fillStyle=C.t;x.fillRect(0,0,16,5);x.fillStyle=C.t2;x.fillRect(0,0,16,1);x.fillStyle='#3a2414';x.fillRect(0,5,16,1);x.fillRect(7,0,1,5);x.fillStyle='#c8c8c8';x.fillRect(2,2,1,1);x.fillRect(12,2,1,1);}
     else if(ti===5){x.fillStyle=C.t;x.fillRect(0,0,16,3);x.fillStyle=C.t2;for(let i=0;i<16;i++)if(R()<.6)x.fillRect(i,0,1,1);}
@@ -72,8 +73,17 @@ function makeTiles(ti){
 
 // ---------- sfondi ----------
 export const LW=640,LH=H+30;
-function bands(x,cols,w,h){const n=cols.length,bh=Math.ceil(h/n);cols.forEach((c,i)=>{x.fillStyle=c;x.fillRect(0,i*bh,w,bh+1);});
-  for(let i=1;i<n;i++){const y=i*bh;x.fillStyle=cols[i-1];for(let xx=0;xx<w;xx+=2){x.fillRect(xx,y,1,1);x.fillRect(xx+1,y+2,1,1);}}}
+const BAYER=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5]; // matrice di retino 4x4
+function bands(x,cols,w,h){const n=cols.length,bh=h/n;
+  for(let y=0;y<h;y++){const f=Math.max(0,(y-bh/2)/bh),i=Math.min(n-1,Math.floor(f)),t=f-i,j=Math.min(n-1,i+1);
+    // ogni riga mescola due colori vicini con il retino: la sfumatura resta pixel art
+    x.fillStyle=cols[i];x.fillRect(0,y,w,1);if(j===i||t<=0)continue;x.fillStyle=cols[j];
+    for(let xx=0;xx<w;xx++)if(BAYER[(y&3)*4+(xx&3)]/16<t)x.fillRect(xx,y,1,1);}}
+// bordo luminoso in cima alle sagome dello sfondo: dà profondità ai piani lontani
+function rim(c,col){const x=c.getContext('2d'),d=x.getImageData(0,0,c.width,c.height).data,w=c.width;x.fillStyle=col;
+  for(let y=1;y<c.height;y++)for(let xx=0;xx<w;xx++){const i=(y*w+xx)*4;if(d[i+3]&&!d[i-w*4+3])x.fillRect(xx,y,1,1);}
+  return c;}
+const RIM=['#8a3a5a','#1e4450','#3a4a26',null,'#2a3660','#7a1a14'];
 function triUp(x,cx,by,hw,h){for(let j=0;j<h;j++){const w=Math.round(hw*(j+1)/h);x.fillRect(cx-w,by-h+j,w*2+1,1);}}
 function pine(x,cx,by,h){x.fillRect(cx-1,by-5,3,5);for(let t=0;t<3;t++){const th=h/3*1.5,top=by-5-h+t*h/3;for(let j=0;j<th;j++){const w=Math.round((j/th)*(h*0.22+t*2.5));x.fillRect(cx-w,Math.round(top+j),w*2+1,1);}}}
 function stars(x,R,n,maxY){for(let i=0;i<n;i++){x.fillStyle=R()<.3?'#ffffff':'#c8c0e0';x.fillRect(R()*W|0,R()*maxY|0,1,1);}}
@@ -81,7 +91,7 @@ function layer(f,fn){return {f,c:mk(LW,LH,x=>{for(const off of [0,-LW,LW]){x.sav
 function makeBG(ti){
   const th=THEMES[ti],R=rng(500+ti);
   const sky=mk(W,H,x=>{bands(x,th.sky,W,H);
-    if(ti===0){x.fillStyle='#ffd27a';for(let j=-12;j<=12;j++){const w=Math.round(Math.sqrt(144-j*j));x.fillRect(220-w,120+j,w*2,1);}x.fillStyle='#fff0b0';x.fillRect(214,112,8,3);}
+    if(ti===0){for(const [r,c] of [[22,'#f2b860'],[17,'#f8c870']]){x.fillStyle=c;for(let j=-r;j<=r;j++){const w=Math.round(Math.sqrt(r*r-j*j));for(let xx=-w;xx<w;xx++)if((xx+j)&1||r<20)x.fillRect(220+xx,120+j,1,1);}}x.fillStyle='#ffd27a';for(let j=-12;j<=12;j++){const w=Math.round(Math.sqrt(144-j*j));x.fillRect(220-w,120+j,w*2,1);}x.fillStyle='#fff0b0';x.fillRect(214,112,8,3);}
     if(ti===1||ti===4){stars(x,R,70,110);x.fillStyle='#e8e4c8';for(let j=-9;j<=9;j++){const w=Math.round(Math.sqrt(81-j*j));x.fillRect(250-w,36+j,w*2,1);}x.fillStyle=th.sky[1];for(let j=-9;j<=9;j++){const w=Math.round(Math.sqrt(81-j*j));x.fillRect(255-w,33+j,w*2,1);}}
     if(ti===2){x.fillStyle='#b8d070';for(let j=-10;j<=10;j++){const w=Math.round(Math.sqrt(100-j*j));x.fillRect(80-w,40+j,w*2,1);}stars(x,R,25,90);}
     if(ti===5){x.fillStyle='#ff9040';for(let j=-14;j<=14;j++){const w=Math.round(Math.sqrt(196-j*j));x.fillRect(160-w,70+j,w*2,1);}x.fillStyle='#ffd070';for(let j=-8;j<=8;j++){const w=Math.round(Math.sqrt(64-j*j));x.fillRect(160-w,70+j,w*2,1);}}
@@ -127,6 +137,7 @@ function makeBG(ti){
     const rk=[];for(let xx=0;xx<LW;xx+=r(18,40))rk.push([xx|0,r(10,34)|0]);
     Ls.push(layer(.6,x=>{x.fillStyle='#0e0204';x.fillRect(0,LH-10,LW,10);for(const [bx,h] of rk)triUp(x,bx,LH-10,7,h);}));
   }
+  if(RIM[ti])Ls.forEach(l=>rim(l.c,RIM[ti]));
   return {sky,Ls};
 }
 export const TILES=[],BGS=[];
