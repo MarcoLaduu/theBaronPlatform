@@ -21,7 +21,7 @@ import { THEMES, getTheme } from '../world/themes.js';
 
 function loadLevel(i){
   G.lvlIndex=i;G.lvl=genLevel(i);[G.tiles,G.bg]=getTheme(i);
-  G.ents=G.lvl.ents.map(spawnEnt);G.projs=[];G.parts=[];G.boss=null;G.fight=false;G.portal=null;
+  G.ents=G.lvl.ents.map(spawnEnt);G.projs=[];G.parts=[];G.corpses=[];G.boss=null;G.fight=false;G.portal=null;
   G.checkpoint={x:G.lvl.start.x,y:G.lvl.start.y};G.P=newPlayer(G.checkpoint.x,G.checkpoint.y);
   G.levelRun={damaged:false,stomped:false,kills:0,frames:0,coins:0,coinTotal:G.ents.filter(e=>e.t==='coin').length,bossHit:false};
   G.levelStartCoins=G.coins;cam.x=0;cam.y=ROWS*T-H;

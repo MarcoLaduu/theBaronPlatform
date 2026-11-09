@@ -20,7 +20,7 @@ export function hurt(srcX){
 }
 export function die(){
   if(G.state!=='play')return;
-  G.state='dead';G.stT=0;G.lives--;G.gameRun.deaths++;G.P.vy=-5;G.P.vx=0;sfx('die');music(-1);
+  G.state='dead';G.stT=0;G.P.deathX=G.P.x;G.P.deathY=G.P.y;G.lives--;G.gameRun.deaths++;G.P.vy=-5;G.P.vx=0;sfx('die');music(-1);
 }
 export function respawn(){
   if(G.lives<0){G.state='gameover';G.stT=0;stat('gameovers');return;}
@@ -45,11 +45,16 @@ export function updatePlayer(){
   if(p.atk>0)p.atk--;
   if(hit.attack&&p.atkCd<=0){p.atk=14;p.atkCd=20;p.air=!p.onGround;sfx(p.air?'slash':'swing');}
   if(p.inv>0)p.inv--;
-  const prevBot=p.y+p.h;
+  const prevBot=p.y+p.h,wasGround=p.onGround,fallV=p.vy;
   moveBody(p);
   p.ride=null;
   if(!p.onGround&&p.vy>=0)for(const m of G.ents){if(m.t!=='mp')continue;
     if(p.x+p.w>m.x+1&&p.x<m.x+m.w-1&&prevBot<=m.y+2.5&&p.y+p.h>=m.y){p.y=m.y-p.h;p.vy=0;p.onGround=true;p.ride=m;break;}}
   if(p.onGround&&!p.ride&&solidAt(p.x+1,p.y+p.h+1)&&solidAt(p.x+p.w-1,p.y+p.h+1))p.safe={x:p.x,y:p.y};
   if(p.onGround&&Math.abs(p.vx)>.3)p.anim++;else p.anim=0;
+  // animazioni: atterraggio con polverone, tempo da fermo (respiro e battito di ciglia)
+  if(p.landT>0)p.landT--;
+  if(p.onGround&&!wasGround&&fallV>2){p.landT=6;puff(p.x+5,p.y+p.h,'#d8c8b0',fallV>4.5?6:3,.9,.02);}
+  if(!p.onGround&&wasGround&&p.vy<0)puff(p.x+5,p.y+p.h,'#d8c8b0',3,.6,.02);
+  p.idleT=(p.onGround&&Math.abs(p.vx)<=.3&&!p.atk)?(p.idleT||0)+1:0;
 }

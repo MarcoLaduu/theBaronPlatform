@@ -5,7 +5,8 @@ import { H, S, W } from '../config.js';
 import { titleItems } from '../core/game.js';
 import { ACH, AST, cheatsOn, toasts } from '../data/achievements.js';
 import { ROSTER } from '../data/roster.js';
-import { BAR } from '../graphics/barux.js';
+import { BAR, HAT } from '../graphics/barux.js';
+import { KINDS } from '../graphics/enemies.js';
 import { BOSS_DEF } from '../graphics/bosses.js';
 import { padMsg, padMsgT, padType } from '../input.js';
 import { backBtn, band, drawFit, menuBG, menuItem, padIcon, panel, scrollText, text, textWidth, wrap } from './draw.js';
@@ -164,14 +165,56 @@ function renderCheats(){
   text('Fatto',r.x+r.w/2,r.y+r.h/2,30,'#f3e3c3','center',700);
   text('INVIO per attivare o disattivare · ESC per uscire',640,700,20,'#9a8476','center',400);
 }
+// ---- menu principale animato ----
+// il Barone respira, sbatte le palpebre e ogni tanto si toglie il cilindro per salutare
+function titleBaron(){
+  const t=G.frame,u=13,x=120,c=t%720,ground=(H-16)*S;
+  const greet=c>=560&&c<660,lift=greet?Math.sin(Math.min(1,(c-560)/14)*Math.PI/2)*(c>640?(660-c)/20:1):0;
+  // cammina sul posto mentre lo sfondo scorre: gambe e giacca dai fotogrammi della corsa, testa da quelli del respiro/saluto
+  const step=(t>>3)%4,legs=['run1','run2','run3','run4'][step],bob=step%2?u:0,y=ground-24*u-bob;
+  const head=greet?'greet':(t%170>163?'blink':'idle');
+  out.drawImage(BAR[legs][0],0,15,16,9,x,y+15*u,16*u,9*u);
+  out.drawImage(BAR[head][0],0,0,16,15,x,y,16*u,15*u);
+  if(greet){const hy=y-Math.round(lift*6)*u;out.save();out.translate(x+8*u,hy+5*u);out.rotate(-.25*lift);out.drawImage(HAT[0],-8*u,-5*u,16*u,9*u);out.restore();
+    if(c>570&&c<600&&(c>>2)%2){out.fillStyle='#fff2b0';out.fillRect(x+14*u,hy-u,u,3*u);out.fillRect(x+13*u,hy,3*u,u);}} // scintilla
+  // il bastone oscilla avanti e indietro a ogni passo, come nel gioco
+  const lean=[2,0,-2,0][step],kx=x+13*u,ky=y+15*u;
+  out.fillStyle='#4a2a14';for(let i=0;i<7;i++)out.fillRect(kx+Math.round(lean*i/6)*u,ky+(2+i)*u,u,u);
+  out.fillStyle='#e8b84a';out.fillRect(kx-u,ky,3*u,2*u);
+}
+// titolo a onda, con un riflesso dorato che passa sulle lettere
+function titleWord(str,cx,y,size){
+  const t=G.frame,tw=textWidth(str,size,700),shine=Math.floor((t%240)/6);
+  let x=cx-tw/2;
+  for(let i=0;i<str.length;i++){const ch=str[i],w=textWidth(ch,size,700),dy=Math.round(Math.sin(t*.05+i*.7)*6);
+    text(ch,x+w/2,y+dy,size,i===shine?'#fff8e0':i===shine-1||i===shine+1?'#f8ecc8':'#f3e3c3','center',700);x+=w;}
+}
+// braci e lucciole che salgono
+function titleEmbers(){
+  const t=G.frame;
+  for(let i=0;i<22;i++){const sp=.25+(i*37%10)/25,ph=i*53;
+    const y=H*S+20-((t*sp*2+ph*7)%(H*S+60)),x=(i*173+Math.sin((t+ph)*.02)*40)%(W*S);
+    const tw=(Math.sin(t*.12+i)+1)/2;out.globalAlpha=.35+.55*tw;out.fillStyle=i%3?'#ffb040':'#fff2b0';
+    const s=i%4?4:8;out.fillRect(Math.round(x/4)*4,Math.round(y/4)*4,s,s);}
+  out.globalAlpha=1;
+}
+// ogni tanto uno scagnozzo attraversa la scena in fondo, e un pipistrello passa in cielo
+const PARADE=['goblin','imp','gargoyle','bramble','soldier','toadlet'];
+function titleParade(c){
+  const t=G.frame,per=800,n=Math.floor(t/per),k=t%per,kind=PARADE[n%PARADE.length],K=KINDS[kind];
+  const x=W+20-k*.55,i=(t>>3)%K.frL.length,img=K.frL[i],hop=kind==='toadlet'?-Math.round(Math.abs(Math.sin(k*.06))*10):((t>>2)%2?-1:0);
+  if(x>-30)c.drawImage(img,Math.round(x),H-16-img.height+hop);
+  const bk=(t+400)%per,B=KINDS.bat;
+  if(n%2===0&&bk<420){const bx=-20+bk*.9,byy=40+Math.sin(bk*.05)*12;c.drawImage(B.fr[(t>>2)%B.fr.length],Math.round(bx),Math.round(byy));}
+}
 function renderMenus(){
   if(G.state==='title'){
-    menuBG(.35);
-    out.drawImage(BAR.idle[0],120,(H-16)*S-24*13,16*13,24*13);
-    out.fillStyle='#4a2a14';out.fillRect(120+13*13,(H-16)*S-7*13,13,7*13);out.fillStyle='#e8b84a';out.fillRect(120+12*13,(H-16)*S-9*13,39,26);
+    menuBG(.35,titleParade);
+    titleEmbers();
+    titleBaron();
     const tx=820;
     text('IL BARONE',tx,100,44,'#e8b84a','center',600);
-    text('BARUX',tx,200,150,'#f3e3c3','center',700);
+    titleWord('BARUX',tx,200,150);
     text('e la maledizione di Anlaucer',tx,300,34,'#d8b8a8','center',400);
     const items=titleItems();
     out.fillStyle='rgba(12,4,10,.72)';out.fillRect(tx-250,TITLE_Y-38,500,items.length*TITLE_STEP+70);

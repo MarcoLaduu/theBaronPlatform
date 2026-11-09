@@ -44,6 +44,7 @@ export function updateBoss(){
   if(b.intro>0){b.intro--;if(b.i===0||b.i===2||b.i===3){b.vy=Math.min(b.vy+.35,6);b.vx=0;moveBody(b);}return;}
   if(b.inv>0)b.inv--;
   if(b.shout>0)b.shout--;
+  if(b.act>0)b.act--; // posa d'attacco (bocca aperta, mano alzata...) per qualche fotogramma
   b.t++;
   const {x0,x1}=arena();
   const px=G.P.x+G.P.w/2,bx=b.x+b.w/2,toP=px<bx?-1:1,low=b.hp<=b.max/2;
@@ -62,13 +63,13 @@ export function updateBoss(){
     moveBody(b);if(b.hitWall)b.dir*=-1;
     b.face=toP;
     b.throwEvery=low?110:140; // il sacchetto sopra la testa avvisa 30 frame prima del lancio
-    if(b.t%b.throwEvery===0){G.projs.push({type:'barrel',coin:true,x:bx-5,y:b.y,w:10,h:10,vx:toP*(.9+Math.random()*.4),vy:-4.2,life:420,rot:0});sfx('throw');}
+    if(b.t%b.throwEvery===0){b.act=22;G.projs.push({type:'barrel',coin:true,x:bx-5,y:b.y,w:10,h:10,vx:toP*(.9+Math.random()*.4),vy:-4.2,life:420,rot:0});sfx('throw');}
     break;}
   case 1:{ // Gankàla: teletrasporto, rovi dal terreno, sfere
     b.y=b.baseY+Math.sin(b.t*.05)*3;
     if(b.st==='idle'){b.face=toP;b.alpha=1;b.visible=true;
-      if(b.t%(low?60:85)===0){const xs=low?[px-42,px-6,px+30]:[px-6];xs.forEach(x=>G.projs.push({type:'thorn',x:clamp(x,x0,x1-12),y:floorY-28,w:12,h:28,ph:0,warn:40,life:999}));sfx('cast');}
-      if(b.t%110===55){const a=Math.atan2(G.P.y+10-(b.y+12),px-bx);G.projs.push({type:'orb',x:bx-4,y:b.y+10,w:8,h:8,vx:Math.cos(a)*1.6,vy:Math.sin(a)*1.6,life:300});sfx('cast');}
+      if(b.t%(low?60:85)===0){const xs=low?[px-42,px-6,px+30]:[px-6];b.act=26;xs.forEach(x=>G.projs.push({type:'thorn',x:clamp(x,x0,x1-12),y:floorY-28,w:12,h:28,ph:0,warn:40,life:999}));sfx('cast');}
+      if(b.t%110===55){const a=Math.atan2(G.P.y+10-(b.y+12),px-bx);b.act=26;G.projs.push({type:'orb',x:bx-4,y:b.y+10,w:8,h:8,vx:Math.cos(a)*1.6,vy:Math.sin(a)*1.6,life:300});sfx('cast');}
       if(b.t%170===0){b.st='fade';b.k=0;}
     } else if(b.st==='fade'){b.k++;b.alpha=1-b.k/20;b.visible=b.k<8;
       if(b.k>=20){let nx,tries=0;do{nx=x0+10+Math.random()*(x1-x0-20-b.w);}while(Math.abs(nx+b.w/2-px)<70&&tries++<30);b.x=nx;b.st='appear';b.k=0;}
@@ -91,7 +92,7 @@ export function updateBoss(){
       const shots=low?4:3;
       if(b.k%30===0&&b.k<=shots*30){
         const ox=b.wallDir>0?b.x+b.w:b.x-12,oy=b.y+12,a=Math.atan2(G.P.y+10-oy,px-ox);
-        G.projs.push({type:'sonic',x:ox,y:oy-9,w:12,h:18,vx:Math.cos(a)*2.3,vy:Math.sin(a)*2.3,dir:b.wallDir,life:260});sfx('screech');}
+        b.act=18;G.projs.push({type:'sonic',x:ox,y:oy-9,w:12,h:18,vx:Math.cos(a)*2.3,vy:Math.sin(a)*2.3,dir:b.wallDir,life:260});sfx('screech');}
       if(b.k>shots*30+40){b.st='air';b.vy=-2;b.vx=b.wallDir*1.6;b.k=0;} // si stacca e ricade con un'onda d'urto
       break;}
     b.vy=Math.min(b.vy+.3,7);moveBody(b);
@@ -129,7 +130,7 @@ export function updateBoss(){
     const homeY=floorY-104,cx=(x0+x1)/2;
     const tx=cx-b.w/2+Math.sin(b.t*.02)*100;
     if(b.st==='idle'||b.st==='hover'){b.st='hover';b.k++;b.x+=(tx-b.x)*.2;b.y=homeY+Math.sin(b.t*.09)*6;
-      if(b.k%(low?45:65)===0){for(const vx of [-.9,0,.9])G.projs.push({type:'shriek',x:bx-4,y:b.y+18,w:8,h:8,vx,vy:1.6,life:200,bounce:vx!==0});sfx('screech');}
+      if(b.k%(low?45:65)===0){b.act=18;for(const vx of [-.9,0,.9])G.projs.push({type:'shriek',x:bx-4,y:b.y+18,w:8,h:8,vx,vy:1.6,life:200,bounce:vx!==0});sfx('screech');}
       if(b.k>(low?120:170)){b.st='warn';b.k=0;b.again=false;sfx('screech');}}
     else if(b.st==='warn'){ // lampeggia prima della picchiata
       b.k++;b.y+=Math.sin(b.k*.8)*.6;
@@ -176,7 +177,7 @@ export function updateBoss(){
       if(b.k>110){b.st='hover';b.k=0;b.lastAnla=b.t;}}
     else if(b.st==='fire'){b.k++;b.face=toP;
       if(b.k===20||b.k===50||(low&&b.k===80)){const n=low?7:5,base=Math.atan2(G.P.y+10-(b.y+b.h/2),px-bx);
-        for(let j=0;j<n;j++){const a=base+(j-(n-1)/2)*.22;G.projs.push({type:'fire',x:bx-4,y:b.y+b.h/2-4,w:8,h:8,vx:Math.cos(a)*1.7,vy:Math.sin(a)*1.7,life:300});}sfx('fire');}
+        b.act=22;for(let j=0;j<n;j++){const a=base+(j-(n-1)/2)*.22;G.projs.push({type:'fire',x:bx-4,y:b.y+b.h/2-4,w:8,h:8,vx:Math.cos(a)*1.7,vy:Math.sin(a)*1.7,life:300});}sfx('fire');}
       if(b.k>(low?100:75)){b.st='hover';b.k=0;}}
     else if(b.st==='swoop'){const sx=b.dir>0?x0+4:x1-b.w-4;b.face=b.dir;
       if(b.ph===0){b.x+=(sx-b.x)*.08;b.y+=(homeY-b.y)*.08;if(Math.abs(sx-b.x)<3)b.ph=1;}

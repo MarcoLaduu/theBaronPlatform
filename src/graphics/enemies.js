@@ -1,5 +1,5 @@
 // Sprite e caratteristiche degli scagnozzi.
-import { flip, sprite } from '../utils.js';
+import { flip, sprite, white } from '../utils.js';
 import { MINION_ART } from './minionArt.js';
 
 const IMP_PAL={k:'#14060a',R:'#c42c38',L:'#ff6a5a',D:'#7a1420',y:'#ffd84a',w:'#ffffff'};
@@ -33,3 +33,9 @@ export const KINDS={};
 for(const k in KDEF){const d=KDEF[k],fr=d.maps.map((m,i)=>MINION_ART[k](i));KINDS[k]=Object.assign({},d,{fr,frL:fr.map(flip)});}
 const IMP_L=[MINION_ART.imp(0),MINION_ART.imp(1)]; // disegnato con la coda a destra: guarda a sinistra
 KINDS.imp={fr:IMP_L.map(flip),frL:IMP_L,w:10,h:12,ai:'walk',spd:.55,hp:1,col:'#c42c38'};
+// fotogrammi in più: quelli con una sola posa ne hanno ora due (streghetta, rospetto, elmo)
+for(const k of ['witch','toadlet','helmet']){const fr=[0,1].map(i=>MINION_ART[k](i));KINDS[k].fr=fr;KINDS[k].frL=fr.map(flip);}
+// il lanciatore ha la posa con il sasso alzato
+{const c=MINION_ART.thrower(2);KINDS.thrower.thr=[c,flip(c)];KINDS.thrower.fr=[0,1].map(i=>MINION_ART.thrower(i));KINDS.thrower.frL=KINDS.thrower.fr.map(flip);}
+// versione bianca di ogni fotogramma, per il lampo quando vengono colpiti
+for(const k in KINDS){const K=KINDS[k];K.wr=K.fr.map(white);K.wl=K.frL.map(white);}

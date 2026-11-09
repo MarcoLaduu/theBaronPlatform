@@ -15,8 +15,9 @@ function goblinBase(f,cap,thrower){
   S(6,4,g2);R(4,5,4,1,'#3a1410');S(5,5,W);S(7,5,W); // naso e ghigno
   R(3,6,6,3,b);S(3,6,b1);S(3,7,b1);R(8,6,1,3,b2);S(5,7,'#e8b84a');R(3,8,6,1,b2);S(6,8,'#e8b84a');
   S(2,6,g1);S(2,7,g);S(9,6,g2);S(9,7,g2);
-  if(thrower){S(10,5,'#8a8a9a');S(10,4,'#c8c8d0');S(11,5,'#5a5a6a');} // sasso in mano
-  if(f===0){R(3,9,2,2,g);R(7,9,2,2,g2);R(2,11,3,1,b2);R(7,11,3,1,b2);}
+  if(thrower&&f===2){S(9,6,g2);S(10,5,g2);S(10,4,g);R(9,1,3,3,'#8a8a9a');S(9,1,'#c8c8d0');S(10,1,'#c8c8d0');R(10,3,2,1,'#5a5a6a');} // fotogramma 2: sasso alzato sopra la testa
+  else if(thrower){S(10,5,'#8a8a9a');S(10,4,'#c8c8d0');S(11,5,'#5a5a6a');} // sasso in mano
+  if(f!==1){R(3,9,2,2,g);R(7,9,2,2,g2);R(2,11,3,1,b2);R(7,11,3,1,b2);}
   else{R(2,9,2,2,g);R(8,9,2,2,g2);R(1,11,3,1,b2);R(8,11,3,1,b2);}
   return p.outline('#140a0c').canvas();
 }
@@ -37,7 +38,7 @@ export function bramble(f){
 }
 
 // streghetta sulla scopa
-export function witch(){
+export function witch(f=0){
   const p=pix(12,11),{S,R}=p;
   const pu='#4a2a6a',pu1='#7a5aaa',pu2='#2e1844',gr='#7ab05a',gr1='#b0e090';
   S(4,0,pu);R(3,1,3,1,pu);S(3,1,pu1);R(2,2,4,1,pu);S(2,2,pu1);R(1,3,7,1,pu2);S(4,2,'#e8b84a'); // cappello con fibbia
@@ -45,15 +46,16 @@ export function witch(){
   R(2,6,5,2,pu);S(2,6,pu1);R(6,6,1,2,pu2);S(1,7,gr); // veste
   R(0,8,9,1,'#a87444');R(0,8,3,1,'#c8946a');S(8,8,'#6a3a1a'); // manico della scopa
   R(9,7,3,3,'#e8c048');S(9,7,'#fff0a0');S(11,9,'#a87a20');R(10,8,1,1,'#c89a30'); // saggina
-  R(3,9,3,1,pu2);S(7,1,'#fff0a0');S(8,0,'#fff0a0'); // gambe e scintilla
+  if(f){S(11,7,'#a87a20');S(9,9,'#fff0a0');S(3,10,pu2);R(3,9,3,1,pu);}else R(3,9,3,1,pu2); // la saggina e la veste si muovono
+  if(f)S(8,0,'#ffffff');else{S(7,1,'#fff0a0');S(8,0,'#fff0a0');} // scintilla
   return p.outline('#120812').canvas();
 }
 
 // rospetto
-export function toadlet(){
+export function toadlet(f=0){
   const p=pix(12,9),{S,R}=p;
   const g='#6a7a30',g1='#9aaa50',g2='#44521e',l='#c8c890',l1='#e8e8b8';
-  R(0,1,3,2,g);R(7,1,3,2,g);S(1,1,'#ffd030');S(8,1,'#ffd030');S(1,2,'#140a04');S(8,2,'#140a04');S(0,1,'#fff8c0');S(7,1,'#fff8c0'); // occhi
+  R(0,1,3,2,g);R(7,1,3,2,g);if(f===1){R(0,2,3,1,'#44521e');R(7,2,3,1,'#44521e');}else{S(1,1,'#ffd030');S(8,1,'#ffd030');S(1,2,'#140a04');S(8,2,'#140a04');S(0,1,'#fff8c0');S(7,1,'#fff8c0');} // occhi (fotogramma 1: chiusi)
   R(0,3,11,4,g);R(0,3,4,1,g1);S(1,4,g1);R(9,3,2,4,g2);S(4,3,g2);S(6,3,g2); // corpo con macchie
   R(1,4,9,1,'#2e3814');S(5,4,'#a02020'); // bocca
   R(2,5,7,2,l);R(2,5,3,1,l1);R(8,5,1,2,'#a8a878'); // pancia
@@ -89,12 +91,12 @@ export function soldier(f){
 }
 
 // elmo volante (lo stesso della seconda fase di Ser Rekter, in piccolo)
-export function helmet(){
+export function helmet(f=0){
   const p=pix(12,9),{S,R}=p;
   const m='#848a9c',m1='#c8d0e0',m2='#565a6c';
-  R(4,0,3,1,'#ff7a64');R(5,1,3,1,'#c8283a');S(8,1,'#7a1424'); // pennacchio
+  if(f){R(3,0,3,1,'#ff7a64');R(4,1,4,1,'#c8283a');S(8,1,'#7a1424');S(2,1,'#7a1424');}else{R(4,0,3,1,'#ff7a64');R(5,1,3,1,'#c8283a');S(8,1,'#7a1424');} // pennacchio che sventola
   R(2,2,8,6,m);R(2,2,2,6,m1);R(8,2,2,6,m2);R(5,2,1,6,m1);S(3,2,'#ffffff');
-  R(2,4,8,1,'#12121a');S(6,4,'#ff5030');S(8,4,'#ff5030'); // feritoia con occhi accesi
+  R(2,4,8,1,'#12121a');S(6,4,f?'#ffd080':'#ff5030');S(8,4,f?'#ffd080':'#ff5030'); // feritoia con occhi accesi
   S(7,6,m2);S(8,6,m2);R(2,7,8,1,'#d8a840');S(2,7,'#fff2a8');
   return p.outline('#0a0a10').canvas();
 }

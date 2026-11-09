@@ -21,7 +21,12 @@ export function spawnEnt(e){const o=Object.assign({},e,{alive:true,t0:Math.rando
 // Probabilità che uno scagnozzo sconfitto lasci una vita extra.
 export const LIFE_DROP_CHANCE=.02;
 function gainLife(){G.lives++;G.oneUpT=70;sfx('life');}
-function killEnt(e,src){if(Math.random()<LIFE_DROP_CHANCE)gainLife();markSeen(e.kind);checkGallery();e.alive=false;stat('kills');if(src==='air')stat('air');if(src==='stomp')stat('stomp');if(!e.summoned)G.levelRun.kills++;sfx('kill');puff(e.x+e.w/2,e.y+e.h/2,KINDS[e.kind].col,10,2);puff(e.x+e.w/2,e.y+e.h/2,'#ffffff',4,1);}
+function killEnt(e,src){addCorpse(e,src);if(Math.random()<LIFE_DROP_CHANCE)gainLife();markSeen(e.kind);checkGallery();e.alive=false;stat('kills');if(src==='air')stat('air');if(src==='stomp')stat('stomp');if(!e.summoned)G.levelRun.kills++;sfx('kill');puff(e.x+e.w/2,e.y+e.h/2,KINDS[e.kind].col,10,2);puff(e.x+e.w/2,e.y+e.h/2,'#ffffff',4,1);}
+// scagnozzo sconfitto: se schiacciato si appiattisce, se bastonato vola via girando e cade giù
+function addCorpse(e,src){const K=KINDS[e.kind],L=e.dir<=0,img=(L?K.frL:K.fr)[0],away=(e.x+e.w/2<G.P.x+G.P.w/2)?-1:1;
+  G.corpses.push(src==='stomp'?{img,x:e.x+e.w/2,y:e.y+e.h,mode:'flat',t:0}:{img,x:e.x+e.w/2,y:e.y+e.h,vx:away*1.4,vy:-3.2,mode:'fly',t:0,spin:away});}
+export function updateCorpses(){for(const c of G.corpses){c.t++;if(c.mode==='fly'){c.x+=c.vx;c.y+=c.vy;c.vy=Math.min(c.vy+.25,6);}}
+  G.corpses=G.corpses.filter(c=>c.mode==='flat'?c.t<24:c.t<70);}
 function hitEnemy(e,fromX,src){e.hp=CHEATS.kill?0:e.hp-1;e.hurtT=20;if(e.hp<=0)killEnt(e,src);else{sfx('bossHit');puff(e.x+e.w/2,e.y+e.h/2,'#ffffff',5,1.4);if(!KINDS[e.kind].fly){e.vx=(e.x+e.w/2<fromX?-1:1)*2;e.vy=-2;}}}
 function addCoin(){G.coins++;stat('coins');G.levelRun.coins++;sfx('coin');if(G.coins%100===0)gainLife();}
 function edgeAhead(e){const fx=e.dir>0?e.x+e.w+1:e.x-1;return !solidAt(fx,e.y+e.h+2)&&!onewayAt(fx,e.y+e.h+2);}
@@ -37,6 +42,7 @@ function updateEnemy(e){
     break;
   case 'throw':
     e.vx*=.8;grav();moveBody(e);e.dir=dx<0?-1:1;
+    if(Math.abs(dx)<170&&Math.abs(dy)<90&&e.t0%130>110)e.act=1;else e.act=0; // alza il sasso prima di lanciarlo
     if(Math.abs(dx)<170&&Math.abs(dy)<90&&e.t0%130===0){G.projs.push({type:'barrel',coin:true,x:ex-5,y:e.y-6,w:10,h:10,vx:clamp(dx/55,-2.2,2.2),vy:-4.2,life:220,rot:0});sfx('throw');}
     break;
   case 'hop':
@@ -74,6 +80,7 @@ function updateEnemy(e){
   }
 }
 export function updateEnts(){
+  updateCorpses();
   for(const e of G.ents){
     if(!e.alive||e.t==='mp')continue;
     e.t0++;

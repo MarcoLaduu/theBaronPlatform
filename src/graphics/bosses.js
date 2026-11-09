@@ -23,4 +23,8 @@ export const BOSS_DEF=[
   map:["kk................kk","kWk..............kWk",".kWk............kWk.",".kWWk..kkkkkk..kWWk.","..kWWkkrrrrrrkkWWk..","...kkrrrrrrrrrrkk...","dd.krrrrrrrrrrrrk.dd","ddkrrryyrrrryyrrrkdd","dddkrrykrrrrkyrrkddd","ddddkrrrrrrrrrrkdddd","dddddkrkwkwkwrkddddd","ddddkkrkkkkkkrkkdddd","dddkrrrrrrrrrrrrkddd","ddkrrRrrrrrrrrRrrkdd","dk.krrrrrrrrrrrrk.kd","d..krrRrrrrrrRrrk..d","....krrrrrrrrrrk....","....krrk....krrk....","...kkrrk....krrkk...","...kkkkk....kkkkk..."]}
 ];
 // gli sprite veri sono disegnati a mano in bossArt.js (stesse dimensioni delle mappe qui sopra a pixel doppi)
-export const BOSS_SPR=BOSS_ART.map(art=>{const c=art();const f=flip(c);return {r:c,l:f,wr:white(c),wl:white(f)};});
+const mk4=c=>{const f=flip(c);return {r:c,l:f,wr:white(c),wl:white(f)};};
+export const BOSS_SPR=BOSS_ART.map(art=>mk4(art()));
+// fotogrammi delle animazioni: lo stesso disegno con una posa diversa (ali, bocca, occhi, gambe...), creati la prima volta che servono
+const CACHE=BOSS_ART.map(()=>new Map());
+export function bossFrame(i,o){const k=JSON.stringify(o);let v=CACHE[i].get(k);if(!v){v=k==='{}'?BOSS_SPR[i]:mk4(BOSS_ART[i](o));CACHE[i].set(k,v);}return v;}

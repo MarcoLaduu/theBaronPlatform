@@ -25,13 +25,20 @@ export function wrap(str,x,y,maxW,lh,size,col){out.font=`400 ${size}px 'Pixelify
   for(const w of words){const t=line?line+' '+w:w;if(out.measureText(t).width>maxW&&line){text(line,x,yy,size,col,'left',400);line=w;yy+=lh;}else line=t;}
   if(line)text(line,x,yy,size,col,'left',400);}
 export function menuItem(label,x,y,sel){
-  if(sel){out.fillStyle='rgba(92,22,38,.92)';out.fillRect(x-230,y-28,460,56);out.fillStyle='#e8b84a';out.fillRect(x-230,y-28,6,56);}
-  text((sel?'▸ ':'')+label,x,y,32,sel?'#f3e3c3':'#9a8476');}
+  if(!sel){text(label,x,y,32,'#9a8476');return;}
+  // voce scelta: la barra respira e la freccia dondola
+  const t=G.frame,pulse=.5+.5*Math.sin(t*.08);
+  out.fillStyle='rgba(92,22,38,.92)';out.fillRect(x-230,y-28,460,56);
+  out.fillStyle=`rgba(232,184,74,${.08+.1*pulse})`;out.fillRect(x-230,y-28,460,56);
+  out.fillStyle='#e8b84a';out.fillRect(x-230,y-28,6+Math.round(pulse*4),56);
+  text(label,x+14,y,32,'#f3e3c3');
+  text('▸',x+14-textWidth(label,32)/2-30+Math.round(Math.sin(t*.15)*5),y,32,'#e8b84a');}
 export function panel(x,y,w,h){out.fillStyle='rgba(18,8,16,.92)';out.fillRect(x,y,w,h);out.strokeStyle='#5c1626';out.lineWidth=4;out.strokeRect(x+2,y+2,w-4,h-4);}
-export function menuBG(dark){
+export function menuBG(dark,extra){
   [G.tiles,G.bg]=getTheme(0);
   drawBG(G.titleX,0);
   for(let x=-(G.titleX%16|0);x<W;x+=16)ctx.drawImage(G.tiles.top,x,H-16);
+  if(extra)extra(ctx); // cose animate sullo sfondo (scagnozzi di passaggio)
   out.drawImage(buf,0,0,W*S,H*S);
   out.fillStyle=`rgba(12,4,10,${dark})`;out.fillRect(0,0,W*S,H*S);
 }
