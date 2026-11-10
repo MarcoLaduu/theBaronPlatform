@@ -28,7 +28,7 @@ La prima volta che giochi il Livello 1 compare la finestra **Come si gioca** con
 
 Il gioco riconosce automaticamente i controller Xbox, PlayStation, Switch Pro e la maggior parte dei joypad USB o Bluetooth: basta collegarlo e premere un tasto. Quando subisci danni, il controller vibra (se lo supporta).
 
-- **A terra** il bastone colpisce in avanti.
+- **A terra** il bastone traccia una mezzaluna davanti al Barone, dalla testa ai piedi.
 - **In aria** il bastone traccia una mezzaluna che colpisce davanti, sopra e sotto.
 - Puoi anche **saltare in testa** ai nemici, tranne a quelli pieni di spine.
 - Il bastone distrugge anche alcuni proiettili nemici.
@@ -49,7 +49,14 @@ Ogni livello ha due checkpoint, piattaforme mobili, fosse, spuntoni e scagnozzi 
 ## Funzionalità
 
 - **6 livelli** con ambientazioni, nemici e musiche diverse
-- **6 boss**, ognuno con il suo schema d'attacco
+- **6 boss**, ognuno con il suo schema d'attacco; Anlaucer ha una seconda fase in cui si trasforma, incendia il pavimento e lancia il raggio anlacioso
+- **Scegli da dove partire**: dopo aver sconfitto il boss di un livello puoi rigiocarlo dall'inizio o andare subito al boss
+- **Pixel art con luci e ombre**: Barone, boss, scagnozzi e scenari ridisegnati con più tonalità
+- **Personaggi animati**:
+  - il Barone respira, sbatte le palpebre, corre con 4 passi, si raccoglie in salto, si schiaccia atterrando, si sbilancia quando colpisce, si piega quando viene colpito e alla sconfitta perde il cilindro;
+  - i boss battono le ali, aprono la bocca quando attaccano, muovono gambe, code e pennacchi e sbattono le palpebre;
+  - gli scagnozzi saltellano camminando, lampeggiano di bianco quando vengono colpiti e alla sconfitta si appiattiscono (se schiacciati) o volano via girando (se bastonati)
+- **Menu principale animato**: il Barone cammina mentre la città scorre e ogni tanto saluta togliendosi il cilindro, il titolo ondeggia, salgono le braci e passano gli scagnozzi
 - **Selettore dei livelli**: ogni livello si sblocca quando lo raggiungi nella storia
 - **Galleria dei personaggi**: le schede di Barux, dei boss e dei 12 tipi di scagnozzi si sbloccano quando li sconfiggi
 - **25 obiettivi** divisi in Storia, Abilità, Combattimento, Collezione e Segreti, con notifica in gioco e barre di avanzamento
