@@ -96,7 +96,7 @@ barone-barux/
 │   ├── audio/               ← musica ed effetti sonori
 │   ├── assets/danno_barone.mp3
 │   └── style.css
-├── public/                  ← icone del sito (favicon.svg, favicon-32.png, apple-touch-icon.png) e .nojekyll
+├── public/                  ← icone del sito (barone-icona.svg, -32.png, -180.png) e .nojekyll
 ├── scripts/deploy.js        ← build + commit + push
 ├── docs/                    ← versione compilata, pubblicata da GitHub Pages
 ├── vite.config.js
